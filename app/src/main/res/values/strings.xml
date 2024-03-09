@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Real Time Object Detection</string>
+    <string name="objectButton">Detect Object</string>
+</resources>
