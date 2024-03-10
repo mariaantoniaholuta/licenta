@@ -20,9 +20,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d("MainActivity: ","Opencv failed to load");
         }
     }
-
-    private Button camera_button;
-    private ObjectDetection obectDetectionClass;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
