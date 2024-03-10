@@ -1,20 +1,23 @@
-package com.example.Real_time_Object_Detection;
+package com.example.Real_time_Object_Detection.depthMap;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import org.tensorflow.lite.DataType;
+import android.content.Context;
+import com.example.Real_time_Object_Detection.util.DepthMapUtil;
+
 import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.gpu.GpuDelegate;
-import org.tensorflow.lite.support.common.FileUtil;
-import org.tensorflow.lite.support.common.TensorOperator;
-import org.tensorflow.lite.support.common.TensorProcessor;
-import org.tensorflow.lite.support.common.ops.NormalizeOp;
-import org.tensorflow.lite.support.image.ImageProcessor;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.image.ops.ResizeOp;
+import org.tensorflow.lite.gpu.GpuDelegate;
+import org.tensorflow.lite.support.image.ImageProcessor;
+import org.tensorflow.lite.support.common.FileUtil;
+import org.tensorflow.lite.DataType;
+import org.tensorflow.lite.support.common.TensorOperator;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 import org.tensorflow.lite.support.tensorbuffer.TensorBufferFloat;
-import org.tensorflow.lite.gpu.GpuDelegate;
+import org.tensorflow.lite.support.common.TensorProcessor;
+import org.tensorflow.lite.support.common.ops.NormalizeOp;
+
+
 
 import java.io.IOException;
 public class MiDASModel {
@@ -58,7 +61,7 @@ public class MiDASModel {
 
         outputTensor = outputTensorProcessor.process(outputTensor);
 
-        return BitmapUtils.byteBufferToBitmap(outputTensor.getFloatArray(), INPUT_IMAGE_DIM);
+        return DepthMapUtil.byteBufferToBitmap(outputTensor.getFloatArray(), INPUT_IMAGE_DIM);
     }
 
     private static class MinMaxScalingOp implements TensorOperator {
