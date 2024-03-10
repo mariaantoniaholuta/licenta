@@ -11,8 +11,6 @@ import android.widget.Button;
 
 import org.opencv.android.OpenCVLoader;
 
-import java.io.IOException;
-
 public class MainActivity extends AppCompatActivity {
     static {
         if(OpenCVLoader.initDebug()){
@@ -24,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Button camera_button;
-    private ObectDetectionClass obectDetectionClass;
+    private ObjectDetection obectDetectionClass;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
