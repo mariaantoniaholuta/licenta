@@ -1,0 +1,44 @@
+format
+TensorFlow Lite v3
+name
+SSD MobileNetV1
+version
+v1
+description
+Identify which of a known set of objects might be present and provide information about their positions within the given image or a video stream.
+author
+TensorFlow
+license
+Apache License. Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.
+normalized_input_image_tensor
+name: normalized_input_image_tensor
+tensor: uint8[1,300,300,3]
+denotation: Image(RGB)
+Input image to be detected. The expected image is 300 x 300, with three channels (red, blue, and green) per pixel. Each value in the tensor is a single byte between 0 and 255.
+quantization: linear
+-1 ≤ 0.0078125 * (q - 128) ≤ 0.9921875
+location: 175
+TFLite_Detection_PostProcess
+name: TFLite_Detection_PostProcess
+tensor: float32
+denotation: BoundingBox
+The locations of the detected boxes.
+location: 167
+TFLite_Detection_PostProcess:1
+name: TFLite_Detection_PostProcess:1
+tensor: float32
+denotation: Feature
+The classes of the detected boxes.
+location: 168
+TFLite_Detection_PostProcess:2
+name: TFLite_Detection_PostProcess:2
+tensor: float32
+denotation: Feature
+The scores of the detected boxes.
+location: 169
+TFLite_Detection_PostProcess:3
+name: TFLite_Detection_PostProcess:3
+tensor: float32
+denotation: Feature
+The number of the detected boxes.
+location: 170

@@ -1,0 +1,5 @@
+Input details:
+[{'name': 'Const', 'index': 0, 'shape': array([  1, 256, 256,   3]), 'shape_signature': array([  1, 256, 256,   3]), 'dtype': <class 'numpy.float32'>, 'quantization': (0.0, 0), 'quantization_parameters': {'scales': array([], dtype=float32), 'zero_points': array([], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}]
+
+Output details:
+[{'name': 'midas_net_custom/sequential/re_lu_9/Relu', 'index': 335, 'shape': array([  1, 256, 256,   1]), 'shape_signature': array([  1, 256, 256,   1]), 'dtype': <class 'numpy.float32'>, 'quantization': (0.0, 0), 'quantization_parameters': {'scales': array([], dtype=float32), 'zero_points': array([], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}]
