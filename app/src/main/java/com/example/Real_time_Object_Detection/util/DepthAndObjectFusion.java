@@ -10,7 +10,7 @@ public class DepthAndObjectFusion {
         float boundingBoxHeight = boundingBox.height();
         float boundingBoxWidth = boundingBox.width();
         float averageObjectHeight = 0.0f;
-        String[] heightLabels = {"person", "car", "car", "truck", "motorcycle", "bicycle", "dog", "cat", "traffic light"};
+        String[] heightLabels = {"person", "car", "car", "truck", "motorcycle", "bicycle", "dog", "cat", "traffic light", "laptop"};
 
         // check if the object label is in the height list
         boolean isHeightLabels = false;
@@ -46,6 +46,9 @@ public class DepthAndObjectFusion {
             case "traffic light":
                 averageObjectHeight = 0.6f;
                 break;
+            case "laptop":
+                averageObjectHeight = 0.3f;
+                break;
         }
 
         float heightInMeters = pixelHeightToMeters(boundingBoxHeight, adjustedDistance);
@@ -62,8 +65,7 @@ public class DepthAndObjectFusion {
     }
 
     public float pixelHeightToMeters(float pixelHeight, float distanceToCamera) {
-        // using estimated distance and camera calibration
-        return (pixelHeight / 1000f) * distanceToCamera;
+        return (pixelHeight / 1000f) * distanceToCamera;  // using estimated distance and camera calibration
     }
 
 }

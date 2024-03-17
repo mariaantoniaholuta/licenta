@@ -19,20 +19,21 @@
 
         <Button
             android:id="@+id/depth_toggle_button"
-            android:layout_width="wrap_content"
+            android:layout_width="175dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end|top"
-            android:layout_margin="20dp"
+            android:layout_margin="5dp"
             android:text="Toggle Depth" />
 
         <Button
-        android:id="@+id/surroundings_check_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|top"
-        android:layout_margin="20dp"
-        android:text="Check Surroundings Proximity" />
+            android:id="@+id/surroundings_check_button"
+            android:layout_width="175dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|top"
+            android:layout_margin="5dp"
+            android:text="Check Proximity" />
 
-     </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

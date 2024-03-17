@@ -1,5 +1,9 @@
 package com.example.Real_time_Object_Detection;
 
+import static com.example.Real_time_Object_Detection.util.TrackedObject.drawBoundingBoxes;
+import static com.example.Real_time_Object_Detection.util.TrackedObject.updateTrackedObjects;
+import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.getAdjustedDistanceValue;
+
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -17,11 +21,13 @@ import org.tensorflow.lite.gpu.GpuDelegate;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
+import com.example.Real_time_Object_Detection.model.DetectionObject;
 import com.example.Real_time_Object_Detection.util.DepthAndObjectFusion;
 import com.example.Real_time_Object_Detection.util.ObjectDetectionUtil;
 import com.example.Real_time_Object_Detection.util.DepthMapUtil;
@@ -35,6 +41,9 @@ public class ImageRecognition {
 
     private int picHeight;
     private int picWidth;
+
+    List<DetectionObject> trackedObjects = new ArrayList<>();
+    int nextObjectId = 1;
 
     ImageRecognition(int targetSize, AssetManager assets, String modelFile, String labelsFile) throws IOException {
         Interpreter.Options interpreterOptions = new Interpreter.Options();
@@ -172,6 +181,8 @@ public class ImageRecognition {
         Object detectedClasses = tfOutputMap.get(1);
         Object detectionScores = tfOutputMap.get(2);
 
+        List<DetectionObject> currentFrameObjects = new ArrayList<>();
+
         for (int i = 0; i < MAX_DETECTIONS; i++) {
             float classOfDetectedObject = (float) Array.get(Array.get(detectedClasses, 0), i);
             float scoreOfDetection = (float) Array.get(Array.get(detectionScores, 0), i);
@@ -184,18 +195,29 @@ public class ImageRecognition {
                 float left = (float) Array.get(specificBox, 1) * picWidth;
                 float right = (float) Array.get(specificBox, 3) * picWidth;
 
-                Imgproc.rectangle(processedImage, new Point(left, top), new Point(right, bottom), new Scalar(255, 165, 0), 2);
+                //Imgproc.rectangle(processedImage, new Point(left, top), new Point(right, bottom), new Scalar(255, 165, 0), 2);
 
                 int depthMapWidth = depthBitmap.getWidth();
                 int depthMapHeight = depthBitmap.getHeight();
                 Rect boundingBox = new Rect((int) left, (int) top, (int) right, (int) bottom);
 
                 String depthAnnotation = DepthRecognition.analyzeDepthAndAdjustDistance(boundingBox, bitmapForProcessing, depthBitmap, processedImage, categories, classOfDetectedObject, depthMapWidth, depthMapHeight);
+                float adjustedDistance = getAdjustedDistanceValue(depthAnnotation);
+                String objectLabel = categories.get((int) classOfDetectedObject);
+
+                DetectionObject newObj = new DetectionObject(boundingBox, objectLabel, scoreOfDetection, adjustedDistance, nextObjectId++);
+                currentFrameObjects.add(newObj);
+
                 Imgproc.putText(processedImage, depthAnnotation, new Point(left, top - 10), 3,1, new Scalar(0, 255, 255), 2);
             }
         }
 
+        // update and draw based on trackedObjects
+        updateTrackedObjects(currentFrameObjects, trackedObjects);
+        drawBoundingBoxes(processedImage, trackedObjects);
+
         Core.flip(processedImage.t(), inputImage, 0);
         return inputImage;
     }
+
 }
