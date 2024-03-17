@@ -19,8 +19,10 @@ import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
+import com.example.Real_time_Object_Detection.util.DepthAndObjectFusion;
 import com.example.Real_time_Object_Detection.util.ObjectDetectionUtil;
 import com.example.Real_time_Object_Detection.util.DepthMapUtil;
 
@@ -170,8 +172,6 @@ public class ImageRecognition {
         Object detectedClasses = tfOutputMap.get(1);
         Object detectionScores = tfOutputMap.get(2);
 
-        DepthMapUtil depthAnalyzer = new DepthMapUtil();
-
         for (int i = 0; i < MAX_DETECTIONS; i++) {
             float classOfDetectedObject = (float) Array.get(Array.get(detectedClasses, 0), i);
             float scoreOfDetection = (float) Array.get(Array.get(detectionScores, 0), i);
@@ -188,13 +188,9 @@ public class ImageRecognition {
 
                 int depthMapWidth = depthBitmap.getWidth();
                 int depthMapHeight = depthBitmap.getHeight();
-                Rect scaledRectForDepth = depthAnalyzer.scaleRectToDepthMap(new Rect((int) left, (int) top, (int) right, (int) bottom), depthMapWidth, depthMapHeight, processedImage.width(), processedImage.height());
-                Bitmap croppedDepthBitmap = depthAnalyzer.safeCreateCroppedBitmap(depthBitmap, scaledRectForDepth);
-                float closestDepth = depthAnalyzer.analyzeCroppedDepthMap(croppedDepthBitmap, bitmapForProcessing);
+                Rect boundingBox = new Rect((int) left, (int) top, (int) right, (int) bottom);
 
-                String objectLabel = categories.get((int) classOfDetectedObject);
-                String depthAnnotation = String.format("%s Depth: %.2f", objectLabel, closestDepth);
-
+                String depthAnnotation = DepthRecognition.analyzeDepthAndAdjustDistance(boundingBox, bitmapForProcessing, depthBitmap, processedImage, categories, classOfDetectedObject, depthMapWidth, depthMapHeight);
                 Imgproc.putText(processedImage, depthAnnotation, new Point(left, top - 10), 3,1, new Scalar(0, 255, 255), 2);
             }
         }

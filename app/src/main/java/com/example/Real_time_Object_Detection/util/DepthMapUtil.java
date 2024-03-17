@@ -48,22 +48,55 @@ public class DepthMapUtil {
     public float analyzeCroppedDepthMap(Bitmap croppedDepthMap,  Bitmap objectBitMap) {
         int width = croppedDepthMap.getWidth();
         int height = croppedDepthMap.getHeight();
-        int minDepthValue = 255;
-        int minX = 0, minY  = 255;
+        long sumDepthValue = 0;
+        int count = 0;
+        float result = -1;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixelDepthValue = getDepthValueAtPoint(croppedDepthMap, objectBitMap, x, y);
-                if (pixelDepthValue < minDepthValue) {
-                    minDepthValue = pixelDepthValue;
-                    minX = x;
-                    minY = y;
+                sumDepthValue += pixelDepthValue;
+                count++;
+            }
+        }
+        if (count > 0) {
+            float averageDepthValue = sumDepthValue / (float) count;
+            Log.d("average depth pixel", String.valueOf(averageDepthValue));
+            result = estimateDepthInMeters(averageDepthValue);
+
+            if(result > 0) {
+                return result;
+            }
+        }
+        return 0;
+    }
+
+    public float analyzeMaxCroppedDepthMap(Bitmap croppedDepthMap,  Bitmap objectBitMap) {
+        int width = croppedDepthMap.getWidth();
+        int height = croppedDepthMap.getHeight();
+        int maxDepthValue = 0;
+        int maxX = 0, maxY  = 0;
+        float result = -1;
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixelDepthValue = getDepthValueAtPoint(croppedDepthMap, objectBitMap, x, y);
+                if (pixelDepthValue > maxDepthValue) {
+                    maxDepthValue = pixelDepthValue;
+                    maxX = x;
+                    maxY = y;
                 }
             }
         }
-        Log.d("min depth pixel", String.valueOf(minDepthValue));
+        result = estimateDepthInMeters(maxDepthValue);
+        Log.d("max depth pixel", String.valueOf(maxDepthValue));
+        Log.d("norm depth in meters", String.valueOf(result));
 
-        return normalizeDepthValue(minDepthValue);
+        if(result > 0) {
+            return result;
+        }
+
+        return 0;
     }
 
     public int getDepthValueAtPoint(Bitmap depthMap, Bitmap objectBitMap, int X, int Y) {
@@ -74,24 +107,30 @@ public class DepthMapUtil {
         int scaledCenterX = (int) (X * scaleX);
         int scaledCenterY = (int) (Y * scaleY);
 
-        Log.d("Scaled locationX", String.valueOf(scaledCenterX));
-        Log.d("Scaled locationY", String.valueOf(scaledCenterY));
         int depthValue = 0;
 
         if (scaledCenterX >= 0 && scaledCenterX < depthMap.getWidth() && scaledCenterY >= 0 && scaledCenterY < depthMap.getHeight()) {
-            depthValue = depthMap.getPixel(scaledCenterX, scaledCenterY);
-            Log.d("depthValue-ARGB", String.valueOf(depthValue));
+            int depthPixel = depthMap.getPixel(scaledCenterX, scaledCenterY);
+            depthValue = Color.red(depthPixel);
         } else {
             Log.d("depthMap", "Scaled coordinates out of bounds");
+            return -1;
         }
         return depthValue;
     }
 
     public float normalizeDepthValue(int depthValue) {
-
-        int redValue = (depthValue >> 16) & 0xFF;
-        float depthRangeMax = 10f;
-
-        return (redValue / 255.0f) * depthRangeMax;
+        float depthRangeMax = 20f;
+        return (depthValue / 255.0f) * depthRangeMax;
     }
+
+    public float estimateDepthInMeters(float depthValue) {
+        float maxDepthRangeInMeters = 10.0f;
+        int depthToMeteresRatio = 2;
+        float normalizedDepth = depthValue / 255.0f;
+        float distanceInMeters = (1.0f - normalizedDepth) * maxDepthRangeInMeters - depthToMeteresRatio;
+
+        return distanceInMeters;
+    }
+
 }
