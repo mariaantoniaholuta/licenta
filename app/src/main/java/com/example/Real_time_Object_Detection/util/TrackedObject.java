@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 import com.example.Real_time_Object_Detection.model.DetectionObject;
+import com.example.Real_time_Object_Detection.model.VehicleLabel;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -17,8 +18,11 @@ public class TrackedObject {
 
     static int DISTANCE_TO_NEXT_THRESHOLD = 10;
     static double IOU_THRESHOLD = 0.3;
-    static double DISTANCE_WEIGHT = 0.5;
-    static double IOU_WEIGHT = 0.5;
+    static double DISTANCE_WEIGHT = 0.6;
+    static double IOU_WEIGHT = 0.4;
+
+    static double VEHICLE_DISTANCE_WEIGHT = 0.7;
+    static double VEHICLE_IOU_WEIGHT = 0.3;
 
     public static void drawBoundingBoxes(Mat processedImage, List<DetectionObject> trackedObjects) {
         ColorManager colorManager = new ColorManager();
@@ -30,8 +34,19 @@ public class TrackedObject {
             Point startPoint = new Point(box.left, box.top);
             Point endPoint = new Point(box.right, box.bottom);
 
-            // if it's not too far, color with different colors
-            if(obj.getDepth() < 6.5f) {
+            String objectLabel = obj.getLabel();
+
+            // check if the object label is a vehicle
+            boolean isEqualToVehicle = false;
+            for (VehicleLabel label : VehicleLabel.values()) {
+                if (objectLabel.equalsIgnoreCase(label.toString())) {
+                    isEqualToVehicle = true;
+                    break;
+                }
+            }
+
+            // if it's not too far or it is a vehicle, color with different colors
+            if((obj.getDepth() < 8.5f || isEqualToVehicle) && (obj.getDepth() > 0)) {
                 Imgproc.rectangle(processedImage, startPoint, endPoint, color, 2);
             } else {
                 Imgproc.rectangle(processedImage,  startPoint, endPoint, new Scalar(255, 165, 0), 2);
@@ -45,12 +60,19 @@ public class TrackedObject {
             DetectionObject bestMatch = null;
             double bestCombinedScore = -1;
 
+            boolean isCurrentObjectVehicle = isVehicle(currentObject.getLabel());
+
             for (DetectionObject trackedObject : trackedObjects) {
                 double iouScore = calculateIOU(currentObject.getBoundingBox(), trackedObject.getBoundingBox());
                 double distance = currentObject.calculateDistanceBetweenObject(trackedObject);
 
-                // IOU and distance combine score for best result
-                double combinedScore = calculateCombinedScore(iouScore, distance, DISTANCE_TO_NEXT_THRESHOLD);
+                double combinedScore;
+                if (isCurrentObjectVehicle) {
+                    // different for vehicles
+                    combinedScore = VEHICLE_IOU_WEIGHT * iouScore + VEHICLE_DISTANCE_WEIGHT * (1 - distance / DISTANCE_TO_NEXT_THRESHOLD);
+                } else {
+                    combinedScore = IOU_WEIGHT * iouScore + DISTANCE_WEIGHT * (1 - distance / DISTANCE_TO_NEXT_THRESHOLD);
+                }
 
                 if (combinedScore > bestCombinedScore) {
                     bestCombinedScore = combinedScore;
@@ -58,7 +80,7 @@ public class TrackedObject {
                 }
             }
 
-            if (bestMatch != null && bestCombinedScore > calculateScoreThreshold(IOU_THRESHOLD, DISTANCE_TO_NEXT_THRESHOLD)) {
+            if (bestMatch != null && bestCombinedScore > calculateScoreThreshold(IOU_THRESHOLD, DISTANCE_TO_NEXT_THRESHOLD, isCurrentObjectVehicle)) {
                 bestMatch.update(currentObject);
                 updatedTrackedObjects.add(bestMatch);
             } else {
@@ -99,7 +121,23 @@ public class TrackedObject {
         double normalizedDistanceScore = (maxDistance - distance) / maxDistance;
         return IOU_WEIGHT * iouScore + DISTANCE_WEIGHT * normalizedDistanceScore;
     }
-    private static double calculateScoreThreshold(double iouThreshold, double maxDistance) {
-        return IOU_WEIGHT * iouThreshold + DISTANCE_WEIGHT * (maxDistance - maxDistance / 2) / maxDistance;
+    private static double calculateScoreThreshold(double iouThreshold, double maxDistance, boolean isVehicle) {
+        //return IOU_WEIGHT * iouThreshold + DISTANCE_WEIGHT * (maxDistance - maxDistance / 2) / maxDistance;
+        double weightIou = isVehicle ? VEHICLE_IOU_WEIGHT : IOU_WEIGHT;
+        double weightDistance = isVehicle ? VEHICLE_DISTANCE_WEIGHT : DISTANCE_WEIGHT;
+
+        return weightIou * iouThreshold + weightDistance * (maxDistance - maxDistance / 2) / maxDistance;
     }
+
+    public static boolean isVehicle(String objectLabel) {
+        boolean isEqualToVehicle = false;
+        for (VehicleLabel label : VehicleLabel.values()) {
+            if (objectLabel.equalsIgnoreCase(label.toString())) {
+                isEqualToVehicle = true;
+                break;
+            }
+        }
+        return isEqualToVehicle;
+    }
+
 }

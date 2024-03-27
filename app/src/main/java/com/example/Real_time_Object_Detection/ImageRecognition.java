@@ -1,6 +1,7 @@
 package com.example.Real_time_Object_Detection;
 
 import static com.example.Real_time_Object_Detection.util.TrackedObject.drawBoundingBoxes;
+import static com.example.Real_time_Object_Detection.util.TrackedObject.isVehicle;
 import static com.example.Real_time_Object_Detection.util.TrackedObject.updateTrackedObjects;
 import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.getAdjustedDistanceValue;
 
@@ -186,7 +187,7 @@ public class ImageRecognition {
         for (int i = 0; i < MAX_DETECTIONS; i++) {
             float classOfDetectedObject = (float) Array.get(Array.get(detectedClasses, 0), i);
             float scoreOfDetection = (float) Array.get(Array.get(detectionScores, 0), i);
-            if (scoreOfDetection > 0.6) {
+            if ((scoreOfDetection > 0.6) || (scoreOfDetection > 0.4 && isVehicle(String.valueOf(classOfDetectedObject)))) {
                 Object specificBox = Array.get(Array.get(detectedBoxes, 0), i);
 
                 float top = (float) Array.get(specificBox, 0) * picHeight;

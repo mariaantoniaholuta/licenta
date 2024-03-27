@@ -23,7 +23,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import com.example.Real_time_Object_Detection.depthMap.MiDASModel;
 import java.io.IOException;
-
+import android.util.DisplayMetrics;
 public class CameraActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private static final String LOG_TAG = "CameraActivity";
     private CameraBridgeViewBase cameraView;
@@ -32,6 +32,8 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private boolean depthEnabled = false;
     private boolean surroundingsEnabled = false;
     private MiDASModel miDASModel;
+
+    public static float DisplayHeightInPixels;
 
     private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -48,6 +50,13 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        float screenHeightInPixels = displayMetrics.heightPixels;
+        Log.i(LOG_TAG, "height in pixels is" + screenHeightInPixels);
+        DisplayHeightInPixels = screenHeightInPixels;
+
         initializeScreen();
         checkCameraPermission();
 

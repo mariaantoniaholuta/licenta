@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 public class DepthMapUtil {
+    public int tooFarThresh = 5;
 
     public static Bitmap byteBufferToBitmap(float[] imageArray, int imageDim) {
         Bitmap bitmap = Bitmap.createBitmap(imageDim, imageDim, Bitmap.Config.RGB_565);
@@ -55,20 +56,29 @@ public class DepthMapUtil {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixelDepthValue = getDepthValueAtPoint(croppedDepthMap, objectBitMap, x, y);
-                sumDepthValue += pixelDepthValue;
-                count++;
+                if(pixelDepthValue > tooFarThresh) {
+                    sumDepthValue += pixelDepthValue;
+                    count++;
+                }
             }
         }
         if (count > 0) {
             float averageDepthValue = sumDepthValue / (float) count;
+
+            if(averageDepthValue < tooFarThresh) {
+                Log.d("too far", String.valueOf(averageDepthValue));
+                return -1;
+            }
+
             Log.d("average depth pixel", String.valueOf(averageDepthValue));
             result = estimateDepthInMeters(averageDepthValue);
 
             if(result > 0) {
                 return result;
+                //return -1;
             }
         }
-        return 0;
+        return -1;
     }
 
     public float analyzeMaxCroppedDepthMap(Bitmap croppedDepthMap,  Bitmap objectBitMap) {
@@ -88,6 +98,11 @@ public class DepthMapUtil {
                 }
             }
         }
+
+        if(maxDepthValue < tooFarThresh) {
+            return -1;
+        }
+
         result = estimateDepthInMeters(maxDepthValue);
         Log.d("max depth pixel", String.valueOf(maxDepthValue));
         Log.d("norm depth in meters", String.valueOf(result));
@@ -96,7 +111,7 @@ public class DepthMapUtil {
             return result;
         }
 
-        return 0;
+        return -1;
     }
 
     public int getDepthValueAtPoint(Bitmap depthMap, Bitmap objectBitMap, int X, int Y) {
