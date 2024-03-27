@@ -16,7 +16,7 @@ import java.util.List;
 
 public class TrackedObject {
 
-    static int DISTANCE_TO_NEXT_THRESHOLD = 10;
+    static int DISTANCE_TO_NEXT_THRESHOLD = 6;
     static double IOU_THRESHOLD = 0.3;
     static double DISTANCE_WEIGHT = 0.6;
     static double IOU_WEIGHT = 0.4;

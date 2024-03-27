@@ -2,6 +2,8 @@ package com.example.Real_time_Object_Detection.model;
 
 import android.graphics.Rect;
 
+import com.example.Real_time_Object_Detection.util.filters.KalmanFilter;
+
 public class DetectionObject {
     Rect boundingBox;
     String label;
@@ -9,6 +11,8 @@ public class DetectionObject {
     int id;
 
     float depth;
+    private KalmanFilter depthFilter;
+    private KalmanFilter positionXFilter;
 
     public DetectionObject(Rect boundingBox, String label, float score, float depth, int id) {
         this.boundingBox = boundingBox;
@@ -16,6 +20,10 @@ public class DetectionObject {
         this.score = score;
         this.id = id;
         this.depth = depth;
+
+        //with 1.0f error rate
+        this.depthFilter = new KalmanFilter(depth, 1.0f);
+        this.positionXFilter = new KalmanFilter(boundingBox.centerX(), 1.0f);
     }
 
     public double distanceTo(DetectionObject other) {
@@ -28,6 +36,9 @@ public class DetectionObject {
     }
 
     public void update(DetectionObject newObj) {
+        this.updatePositionX(newObj.getBoundingBox().centerX());
+        this.updateDepth(newObj.getDepth());
+
         this.boundingBox = newObj.getBoundingBox();
         this.label = newObj.getLabel();
         this.score = newObj.getScore();
@@ -76,6 +87,17 @@ public class DetectionObject {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void updateDepth(float newDepthMeasurement) {
+        this.depth = this.depthFilter.update(newDepthMeasurement);
+    }
+
+    public void updatePositionX(float newPositionXMeasurement) {
+        float updatedPositionX = this.positionXFilter.update(newPositionXMeasurement);
+        // Actualizează boundingBox cu noua poziție X (și potențial Y dacă extinzi la ambele axe)
+        this.boundingBox.left = (int)(updatedPositionX - boundingBox.width() / 2.0);
+        this.boundingBox.right = (int)(updatedPositionX + boundingBox.width() / 2.0);
     }
 }
 

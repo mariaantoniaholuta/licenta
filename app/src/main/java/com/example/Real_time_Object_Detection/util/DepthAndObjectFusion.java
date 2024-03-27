@@ -28,9 +28,16 @@ public class DepthAndObjectFusion {
         Log.d("height in meters:", (objectType + heightInMeters));
 
         if(isHeightLabels) {
-            if (heightInMeters > averageObjectHeight) {
-                // if calculated height is higher than average object height, it might be closer
-                adjustedDistance *= (averageObjectHeight / heightInMeters);
+//            if (heightInMeters > averageObjectHeight) {
+//                // if calculated height is higher than average object height, it might be closer
+//                adjustedDistance *= (averageObjectHeight / heightInMeters);
+//            }
+            if (heightInMeters < averageObjectHeight) {
+                float distanceAdjustmentFactor = heightInMeters / averageObjectHeight;
+                adjustedDistance /= distanceAdjustmentFactor;
+            } else if (heightInMeters > averageObjectHeight) {
+                float distanceAdjustmentFactor = averageObjectHeight / heightInMeters;
+                adjustedDistance *= distanceAdjustmentFactor;
             }
         }
 
