@@ -1,11 +1,13 @@
-package com.example.Real_time_Object_Detection.util;
+package com.example.Real_time_Object_Detection.util.fusion;
 
 import static com.example.Real_time_Object_Detection.CameraActivity.DisplayHeightInPixels;
+import static com.example.Real_time_Object_Detection.util.fusion.AverageObjectHeight.getAverageObjectHeight;
 
 import android.graphics.Rect;
 import android.util.Log;
 
 public class DepthAndObjectFusion {
+    private static final float METERS_CALIBRATOR = 1.8f;
 
     public float adjustDistanceBasedOnObjectSizeAndType(float estimatedDepth, Rect boundingBox, String objectType) {
         float adjustedDistance = estimatedDepth;
@@ -25,7 +27,6 @@ public class DepthAndObjectFusion {
         }
 
         float heightInMeters = pixelHeightToMeters(boundingBoxHeight, adjustedDistance);
-        Log.d("here if:", (objectType + heightInMeters));
 
         if(isHeightLabels) {
             if (heightInMeters < averageObjectHeight) {
@@ -54,7 +55,15 @@ public class DepthAndObjectFusion {
         return estimatedDistance;
     }
 
-    public float getAverageObjectHeight(String objectType) {
+    public float adjustDistanceForClosenessPrecision(float estimatedDepth) {
+        if (estimatedDepth >= METERS_CALIBRATOR) {
+            return estimatedDepth - METERS_CALIBRATOR;
+        } else {
+            return estimatedDepth;
+        }
+    }
+
+    public float getAverageObjectHeight1(String objectType) {
         float averageObjectHeight = 0.5f;
         switch (objectType) {
             case "person":

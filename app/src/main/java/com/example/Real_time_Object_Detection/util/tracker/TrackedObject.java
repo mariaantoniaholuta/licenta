@@ -1,4 +1,4 @@
-package com.example.Real_time_Object_Detection.util;
+package com.example.Real_time_Object_Detection.util.tracker;
 
 import android.graphics.Rect;
 import android.util.Log;
@@ -118,11 +118,6 @@ public class TrackedObject {
         int interArea = Math.max(0, xB - xA + 1) * Math.max(0, yB - yA + 1);
         int boxAArea = (boxA.right - boxA.left + 1) * (boxA.bottom - boxA.top + 1);
         int boxBArea = (boxB.right - boxB.left + 1) * (boxB.bottom - boxB.top + 1);
-
-//        int interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
-//        // union A
-//        int boxAArea = (boxA.right - boxA.left) * (boxA.bottom - boxA.top);
-//        int boxBArea = (boxB.right - boxB.left) * (boxB.bottom - boxB.top);
 
         int unionArea = boxAArea + boxBArea - interArea;
 

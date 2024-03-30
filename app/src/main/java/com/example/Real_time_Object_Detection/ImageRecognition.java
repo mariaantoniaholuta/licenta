@@ -1,14 +1,13 @@
 package com.example.Real_time_Object_Detection;
 
-import static com.example.Real_time_Object_Detection.util.TrackedObject.drawBoundingBoxes;
-import static com.example.Real_time_Object_Detection.util.TrackedObject.isVehicle;
-import static com.example.Real_time_Object_Detection.util.TrackedObject.updateTrackedObjects;
+import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.drawBoundingBoxes;
+import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.isVehicle;
+import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.updateTrackedObjects;
 import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.getAdjustedDistanceValue;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.Log;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -25,13 +24,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 import com.example.Real_time_Object_Detection.model.DetectionObject;
-import com.example.Real_time_Object_Detection.util.DepthAndObjectFusion;
 import com.example.Real_time_Object_Detection.util.ObjectDetectionUtil;
-import com.example.Real_time_Object_Detection.util.DepthMapUtil;
 
 public class ImageRecognition {
     private final List<String> categories;

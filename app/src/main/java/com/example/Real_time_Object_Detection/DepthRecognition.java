@@ -5,7 +5,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 import com.example.Real_time_Object_Detection.model.VehicleLabel;
-import com.example.Real_time_Object_Detection.util.DepthAndObjectFusion;
+import com.example.Real_time_Object_Detection.util.fusion.DepthAndObjectFusion;
 import com.example.Real_time_Object_Detection.util.DepthMapUtil;
 
 import org.opencv.core.Mat;
@@ -41,12 +41,14 @@ public class DepthRecognition {
         }
 
         if (estimatedDepth == -1) {
-            Log.d("it is -1:", String.valueOf(estimatedDepth));
+            Log.d("depth is -1:", String.valueOf(estimatedDepth));
             estimatedDepth = fusionUtil.estimateDistanceBasedOnSizeAndType(boundingBox, objectLabel);
-            Log.d("it is -1:", String.valueOf(estimatedDepth));
+            Log.d("adjust after -1 value:", String.valueOf(estimatedDepth));
         }
 
-        float adjustedDistance = fusionUtil.adjustDistanceBasedOnObjectSizeAndType(estimatedDepth, boundingBox, objectLabel) - 1.5f;
+        float adjustedDistance = fusionUtil.adjustDistanceBasedOnObjectSizeAndType(estimatedDepth, boundingBox, objectLabel);
+        adjustedDistance = fusionUtil.adjustDistanceForClosenessPrecision(adjustedDistance);
+
 
         Log.d("estimated d:", String.valueOf(estimatedDepth));
         Log.d("adjusted d:", String.valueOf(adjustedDistance));

@@ -6,7 +6,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 public class DepthMapUtil {
-    public int tooFarThresh = 5;
+    public int MIN_VALUE_TO_ANALYZE = 5;
 
     public static Bitmap byteBufferToBitmap(float[] imageArray, int imageDim) {
         Bitmap bitmap = Bitmap.createBitmap(imageDim, imageDim, Bitmap.Config.RGB_565);
@@ -56,7 +56,7 @@ public class DepthMapUtil {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixelDepthValue = getDepthValueAtPoint(croppedDepthMap, objectBitMap, x, y);
-                if(pixelDepthValue > tooFarThresh) {
+                if(pixelDepthValue >= MIN_VALUE_TO_ANALYZE) {
                     sumDepthValue += pixelDepthValue;
                     count++;
                 }
@@ -65,7 +65,7 @@ public class DepthMapUtil {
         if (count > 0) {
             float averageDepthValue = sumDepthValue / (float) count;
 
-            if(averageDepthValue < tooFarThresh) {
+            if(averageDepthValue < MIN_VALUE_TO_ANALYZE) {
                 Log.d("too far", String.valueOf(averageDepthValue));
                 return -1;
             }
@@ -98,7 +98,7 @@ public class DepthMapUtil {
             }
         }
 
-        if(maxDepthValue < tooFarThresh) {
+        if(maxDepthValue < MIN_VALUE_TO_ANALYZE) {
             return -1;
         }
 
@@ -141,7 +141,7 @@ public class DepthMapUtil {
     public float estimateDepthInMeters(float depthValue) {
         //Log.d("estimated in meters", "is " + distanceInMeters);
         float maxDepthRangeInMeters = 10.0f;
-        int depthToMeteresRatio = 7;
+        float depthToMeteresRatio = 1.5f;
         float normalizedDepth = depthValue / 255.0f;
         float distanceInMeters = (1.0f - normalizedDepth) * maxDepthRangeInMeters - depthToMeteresRatio;
 
