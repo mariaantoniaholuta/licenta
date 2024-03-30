@@ -75,7 +75,6 @@ public class DepthMapUtil {
 
             if(result > 0) {
                 return result;
-                //return -1;
             }
         }
         return -1;
@@ -140,11 +139,13 @@ public class DepthMapUtil {
     }
 
     public float estimateDepthInMeters(float depthValue) {
+        //Log.d("estimated in meters", "is " + distanceInMeters);
         float maxDepthRangeInMeters = 10.0f;
-        int depthToMeteresRatio = 2;
+        int depthToMeteresRatio = 7;
         float normalizedDepth = depthValue / 255.0f;
         float distanceInMeters = (1.0f - normalizedDepth) * maxDepthRangeInMeters - depthToMeteresRatio;
 
+        Log.d("estimated in meters", "is " + distanceInMeters);
         return distanceInMeters;
     }
 

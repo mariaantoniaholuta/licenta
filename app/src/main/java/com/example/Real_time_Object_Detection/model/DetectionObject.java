@@ -1,6 +1,7 @@
 package com.example.Real_time_Object_Detection.model;
 
 import android.graphics.Rect;
+import android.util.Log;
 
 import com.example.Real_time_Object_Detection.util.filters.KalmanFilter;
 
@@ -37,7 +38,9 @@ public class DetectionObject {
 
     public void update(DetectionObject newObj) {
         this.updatePositionX(newObj.getBoundingBox().centerX());
+        Log.d("d before kalman update:", String.valueOf(this.getDepth()));
         this.updateDepth(newObj.getDepth());
+        Log.d("d after kalman update:", String.valueOf(this.getDepth()));
 
         this.boundingBox = newObj.getBoundingBox();
         this.label = newObj.getLabel();

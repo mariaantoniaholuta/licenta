@@ -16,13 +16,15 @@ import java.util.List;
 
 public class TrackedObject {
 
-    static int DISTANCE_TO_NEXT_THRESHOLD = 6;
+    static int DISTANCE_TO_NEXT_THRESHOLD = 7;
     static double IOU_THRESHOLD = 0.3;
     static double DISTANCE_WEIGHT = 0.6;
     static double IOU_WEIGHT = 0.4;
 
     static double VEHICLE_DISTANCE_WEIGHT = 0.7;
     static double VEHICLE_IOU_WEIGHT = 0.3;
+
+    static int DISTANCE_NORMALIZATION_OFFSET = 200;
 
     public static void drawBoundingBoxes(Mat processedImage, List<DetectionObject> trackedObjects) {
         ColorManager colorManager = new ColorManager();
@@ -65,22 +67,28 @@ public class TrackedObject {
             for (DetectionObject trackedObject : trackedObjects) {
                 double iouScore = calculateIOU(currentObject.getBoundingBox(), trackedObject.getBoundingBox());
                 double distance = currentObject.calculateDistanceBetweenObject(trackedObject);
+                Log.d("iou score:", String.valueOf(iouScore));
+                Log.d("distance:", String.valueOf(distance));
 
                 double combinedScore;
                 if (isCurrentObjectVehicle) {
                     // different for vehicles
-                    combinedScore = VEHICLE_IOU_WEIGHT * iouScore + VEHICLE_DISTANCE_WEIGHT * (1 - distance / DISTANCE_TO_NEXT_THRESHOLD);
+                    combinedScore = VEHICLE_IOU_WEIGHT * iouScore + VEHICLE_DISTANCE_WEIGHT * (1 - distance / (DISTANCE_TO_NEXT_THRESHOLD + DISTANCE_NORMALIZATION_OFFSET));
                 } else {
-                    combinedScore = IOU_WEIGHT * iouScore + DISTANCE_WEIGHT * (1 - distance / DISTANCE_TO_NEXT_THRESHOLD);
+                    combinedScore = IOU_WEIGHT * iouScore + DISTANCE_WEIGHT * (1 - distance / (DISTANCE_TO_NEXT_THRESHOLD + DISTANCE_NORMALIZATION_OFFSET));
                 }
-
+                Log.d("combined score:", String.valueOf(combinedScore));
+                Log.d("best combined score:", String.valueOf(bestCombinedScore));
                 if (combinedScore > bestCombinedScore) {
                     bestCombinedScore = combinedScore;
                     bestMatch = trackedObject;
                 }
             }
+            Log.d("score Thresh:", String.valueOf(calculateScoreThreshold(IOU_THRESHOLD, DISTANCE_TO_NEXT_THRESHOLD, isCurrentObjectVehicle)));
 
-            if (bestMatch != null && bestCombinedScore > calculateScoreThreshold(IOU_THRESHOLD, DISTANCE_TO_NEXT_THRESHOLD, isCurrentObjectVehicle)) {
+            if ((bestMatch != null) && (bestCombinedScore > calculateScoreThreshold(IOU_THRESHOLD, DISTANCE_TO_NEXT_THRESHOLD, isCurrentObjectVehicle))) {
+                //Log.d("first if:", "here");
+
                 bestMatch.update(currentObject);
                 updatedTrackedObjects.add(bestMatch);
             } else {
@@ -99,20 +107,27 @@ public class TrackedObject {
 
     //Intersection Over Union
     private static double calculateIOU(Rect boxA, Rect boxB) {
+        Log.d("RECT BOXA:", "left"+boxA.left+"top"+boxA.top);
+        Log.d("RECT BOXB:", "left"+boxB.left+"top"+boxB.top);
         // intersection array
         int xA = Math.max(boxA.left, boxB.left);
         int yA = Math.max(boxA.top, boxB.top);
         int xB = Math.min(boxA.right, boxB.right);
         int yB = Math.min(boxA.bottom, boxB.bottom);
 
-        int interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+        int interArea = Math.max(0, xB - xA + 1) * Math.max(0, yB - yA + 1);
+        int boxAArea = (boxA.right - boxA.left + 1) * (boxA.bottom - boxA.top + 1);
+        int boxBArea = (boxB.right - boxB.left + 1) * (boxB.bottom - boxB.top + 1);
 
-        // union A
-        int boxAArea = (boxA.right - boxA.left) * (boxA.bottom - boxA.top);
-        int boxBArea = (boxB.right - boxB.left) * (boxB.bottom - boxB.top);
+//        int interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+//        // union A
+//        int boxAArea = (boxA.right - boxA.left) * (boxA.bottom - boxA.top);
+//        int boxBArea = (boxB.right - boxB.left) * (boxB.bottom - boxB.top);
 
         int unionArea = boxAArea + boxBArea - interArea;
 
+        Log.d("INTER AREA:", "is " + interArea);
+        Log.d("UNION AREA:", "is " + unionArea);
         // IOU
         return unionArea > 0 ? (double) interArea / unionArea : 0;
     }

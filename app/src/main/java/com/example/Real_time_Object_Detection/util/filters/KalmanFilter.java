@@ -4,7 +4,7 @@ public class KalmanFilter {
     // Q - noise process, R - noise to measure, A - state transitional factor
     // B - in control factor, C - measurement factor
     private float Q = 0.1f;
-    private float R = 0.1f;
+    private float R = 0.2f;
     private float A = 1;
     private float B = 0;
     private float C = 1;

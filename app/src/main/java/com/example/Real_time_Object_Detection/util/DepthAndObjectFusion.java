@@ -25,13 +25,9 @@ public class DepthAndObjectFusion {
         }
 
         float heightInMeters = pixelHeightToMeters(boundingBoxHeight, adjustedDistance);
-        Log.d("height in meters:", (objectType + heightInMeters));
+        Log.d("here if:", (objectType + heightInMeters));
 
         if(isHeightLabels) {
-//            if (heightInMeters > averageObjectHeight) {
-//                // if calculated height is higher than average object height, it might be closer
-//                adjustedDistance *= (averageObjectHeight / heightInMeters);
-//            }
             if (heightInMeters < averageObjectHeight) {
                 float distanceAdjustmentFactor = heightInMeters / averageObjectHeight;
                 adjustedDistance /= distanceAdjustmentFactor;
@@ -45,7 +41,7 @@ public class DepthAndObjectFusion {
     }
 
     public float pixelHeightToMeters(float pixelHeight, float distanceToCamera) {
-        return (pixelHeight / 1000f) * distanceToCamera;  // using estimated distance and camera calibration
+        return (pixelHeight / 1000f) * distanceToCamera;
     }
 
     public float estimateDistanceBasedOnSizeAndType(Rect boundingBox, String objectType) {
