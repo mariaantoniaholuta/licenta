@@ -2,14 +2,24 @@ package com.example.Real_time_Object_Detection;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import org.opencv.android.BaseLoaderCallback;
@@ -22,9 +32,13 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import com.example.Real_time_Object_Detection.depthMap.MiDASModel;
+import com.example.Real_time_Object_Detection.util.position.SensorHelper;
+
 import java.io.IOException;
 import android.util.DisplayMetrics;
-public class CameraActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
+import android.widget.TextView;
+
+public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private static final String LOG_TAG = "CameraActivity";
     private CameraBridgeViewBase cameraView;
     private Mat rgbaMat;
@@ -34,6 +48,10 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private MiDASModel miDASModel;
 
     public static float DisplayHeightInPixels;
+
+    private SensorHelper sensorHelper;
+
+    private TextView positionStatusTextView;
 
     private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -65,6 +83,9 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         setupCameraView();
         loadMiDASModel();
         setupButtons();
+
+        positionStatusTextView = findViewById(R.id.positionStatusTextView);
+        sensorHelper = new SensorHelper(this, positionStatusTextView);
     }
 
     private void initializeScreen() {
@@ -105,11 +126,13 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             surroundingsEnabled = !surroundingsEnabled;
             Log.d(LOG_TAG, "Surroundings Check toggled");
         });
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        sensorHelper.start();
         if (!OpenCVLoader.initDebug()) {
             Log.d(LOG_TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCallback);
@@ -122,6 +145,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     @Override
     protected void onPause() {
         super.onPause();
+        sensorHelper.stop();
         if (cameraView != null) {
             cameraView.disableView();
         }
@@ -201,5 +225,10 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             e.printStackTrace();
         }
         return imageRecognition.detectObjectsInImage(rgbaMat);
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
     }
 }
