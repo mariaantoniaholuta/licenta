@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 public class SensorHelper implements SensorEventListener {
     private TextView positionStatusTextView;
+    private VibrationHelper vibrationHelper;
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private Sensor magnetometer;
@@ -22,15 +23,16 @@ public class SensorHelper implements SensorEventListener {
     private static final float ALPHA = 0.98f;
 
     private static final float FILTER_COEFFICIENT = 0.8f;
-    private static final float VERTICAL_THRESHOLD_DEGREES = 25.0f;
-    private static final float PITCH_UPRIGHT_THRESHOLD_DEGREES = 22.0f;
+    public static final float VERTICAL_THRESHOLD_DEGREES = 25.0f;
+    public static final float PITCH_UPRIGHT_THRESHOLD_DEGREES = 22.0f;
 
     public interface SensorListener {
         void onOrientationChanged(float azimuth, float pitch, float roll);
     }
 
-    public SensorHelper(Context context, TextView positionStatusTextView) {
+    public SensorHelper(Context context, TextView positionStatusTextView, VibrationHelper vibrationHelper) {
         this.positionStatusTextView = positionStatusTextView;
+        this.vibrationHelper = vibrationHelper;
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -94,6 +96,15 @@ public class SensorHelper implements SensorEventListener {
         //boolean isHorizontal = (Math.abs(pitch) < HORIZONTAL_THRESHOLD_DEGREES);
         boolean isHorizontal = (pitch <= -90 + PITCH_UPRIGHT_THRESHOLD_DEGREES) || (pitch >= 90 - PITCH_UPRIGHT_THRESHOLD_DEGREES);
         boolean isVertical = (Math.abs(roll) < VERTICAL_THRESHOLD_DEGREES);
+        float normalAzimuth = 95f;
+        float normalPitch = 85f;
+        float normalRoll = 5f;
+
+        float azimuthDeviation = Math.abs(azimuth - normalAzimuth);
+        float pitchDeviation = Math.abs(pitch - normalPitch);
+        float rollDeviation = Math.abs(roll - normalRoll);
+
+        float totalDeviation = azimuthDeviation + pitchDeviation + rollDeviation;
 
         String statusText;
         int color;
@@ -104,6 +115,7 @@ public class SensorHelper implements SensorEventListener {
         } else {
             statusText = String.format("Adjust Position\nAzimuth: %.2f°\nPitch: %.2f°\nRoll: %.2f°", azimuth, pitch, roll);
             color = Color.RED;
+            vibrationHelper.vibrateBasedOnDeviation(totalDeviation);
         }
 
         updatePositionStatus(statusText, color);

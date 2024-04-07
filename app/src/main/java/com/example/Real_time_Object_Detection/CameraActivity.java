@@ -5,14 +5,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
-import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.Window;
@@ -33,6 +29,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import com.example.Real_time_Object_Detection.depthMap.MiDASModel;
 import com.example.Real_time_Object_Detection.util.position.SensorHelper;
+import com.example.Real_time_Object_Detection.util.position.VibrationHelper;
 
 import java.io.IOException;
 import android.util.DisplayMetrics;
@@ -50,6 +47,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public static float DisplayHeightInPixels;
 
     private SensorHelper sensorHelper;
+    private VibrationHelper vibrationHelper;
 
     private TextView positionStatusTextView;
 
@@ -85,7 +83,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         setupButtons();
 
         positionStatusTextView = findViewById(R.id.positionStatusTextView);
-        sensorHelper = new SensorHelper(this, positionStatusTextView);
+        vibrationHelper = new VibrationHelper(this);
+        sensorHelper = new SensorHelper(this, positionStatusTextView, vibrationHelper);
     }
 
     private void initializeScreen() {
