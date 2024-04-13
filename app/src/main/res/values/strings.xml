@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Real Time Object Detection</string>
-    <string name="objectButton">Detect Object</string>
+    <string name="app_name">Vision Aid</string>
+    <string name="objectButton">Start Real-Time Analysis</string>
 </resources>

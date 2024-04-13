@@ -14,6 +14,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.GpuDelegate;
@@ -123,7 +124,7 @@ public class ImageRecognition {
         for (int i = 0; i < MAX_DETECTIONS; i++) {
             float classIndex = (float) Array.get(Array.get(classes, 0), i);
             float score = (float) Array.get(Array.get(scores, 0), i);
-            if (score > 0.7) {
+            if (score > 0.6) {
                 Object box = Array.get(Array.get(boxes, 0), i);
 
                 float top = (float) Array.get(box, 0) * picHeight;
@@ -206,6 +207,7 @@ public class ImageRecognition {
                 currentFrameObjects.add(newObj);
 
                 Imgproc.putText(processedImage, depthAnnotation, new Point(left, top - 10), 3,1, new Scalar(0, 255, 255), 2);
+
             }
         }
 

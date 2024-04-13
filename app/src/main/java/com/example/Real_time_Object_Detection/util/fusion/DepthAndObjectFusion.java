@@ -7,7 +7,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 public class DepthAndObjectFusion {
-    private static final float METERS_CALIBRATOR = 1.8f;
+    private static final float METERS_CALIBRATOR = 2.0f;
 
     public float adjustDistanceBasedOnObjectSizeAndType(float estimatedDepth, Rect boundingBox, String objectType) {
         float adjustedDistance = estimatedDepth;
@@ -15,7 +15,7 @@ public class DepthAndObjectFusion {
         float boundingBoxWidth = boundingBox.width();
         float averageObjectHeight = getAverageObjectHeight(objectType);
 
-        String[] heightLabels = {"person", "car", "car", "truck", "motorcycle", "bicycle", "dog", "cat", "traffic light", "laptop", "keyboard"};
+        String[] heightLabels = {"person", "car", "car", "truck", "motorcycle", "bicycle", "dog", "cat", "traffic light", "laptop", "keyboard", "tv"};
 
         // check if the object label is in the height list
         boolean isHeightLabels = false;

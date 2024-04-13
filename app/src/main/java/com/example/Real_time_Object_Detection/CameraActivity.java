@@ -38,7 +38,7 @@ import java.util.concurrent.Future;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
-public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, DepthRecognition.OnDepthWarningListener {
     private static final String LOG_TAG = "CameraActivity";
     private CameraBridgeViewBase cameraView;
     private Mat rgbaMat;
@@ -53,6 +53,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private VibrationHelper vibrationHelper;
 
     private TextView positionStatusTextView;
+
+    private TextView warningTextView;
 
     private FrameStabilizer stabilizer;
 
@@ -110,15 +112,25 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         initializeScreen();
         checkCameraPermission();
 
-        setContentView(R.layout.activity_camera);
+        setContentView(R.layout.camera_view_activity);
 
         setupCameraView();
         loadMiDASModel();
         setupButtons();
 
         positionStatusTextView = findViewById(R.id.positionStatusTextView);
+        warningTextView = findViewById(R.id.warningTextView);
+        DepthRecognition depthRecognition = new DepthRecognition((DepthRecognition.OnDepthWarningListener) this);
+
         vibrationHelper = new VibrationHelper(this);
         sensorHelper = new SensorHelper(this, positionStatusTextView, vibrationHelper);
+    }
+
+    @Override
+    public void onDepthWarningUpdate(String warningMessage) {
+        runOnUiThread(() -> {
+            warningTextView.setText(warningMessage);
+        });
     }
 
     private void initializeScreen() {
@@ -288,6 +300,4 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
     }
-
-
 }

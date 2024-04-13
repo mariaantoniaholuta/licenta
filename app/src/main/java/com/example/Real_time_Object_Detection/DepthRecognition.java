@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.example.Real_time_Object_Detection.model.VehicleLabel;
 import com.example.Real_time_Object_Detection.util.fusion.DepthAndObjectFusion;
@@ -16,6 +17,16 @@ import org.opencv.core.Mat;
 import java.util.List;
 
 public class DepthRecognition {
+
+    public interface OnDepthWarningListener {
+        void onDepthWarningUpdate(String warningMessage);
+    }
+
+    private static OnDepthWarningListener listener;
+
+    public DepthRecognition(OnDepthWarningListener listener) {
+        this.listener = listener;
+    }
 
     public static String analyzeDepthAndAdjustDistance(Rect boundingBox, Bitmap bitmapForProcessing, Bitmap depthBitmap, Mat processedImage, List<String> categories, double classOfDetectedObject, int depthMapWidth, int depthMapHeight) {
         DepthMapUtil depthAnalyzer = new DepthMapUtil();
@@ -52,13 +63,23 @@ public class DepthRecognition {
         float adjustedDistance = fusionUtil.adjustDistanceBasedOnObjectSizeAndType(estimatedDepth, boundingBox, objectLabel);
         adjustedDistance = fusionUtil.adjustDistanceForClosenessPrecision(adjustedDistance);
 
-
         Log.d("estimated d:", String.valueOf(estimatedDepth));
         Log.d("adjusted d:", String.valueOf(adjustedDistance));
-        if(adjustedDistance < 0.7) {
-              Log.d("depth recognition:", "Careful! Too Close");
-//            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-//            vibrator.vibrate(VibrationEffect.createOneShot(100, 255));
+
+        if ((adjustedDistance < 1) && (objectLabel.equals("person"))) {
+            Log.d("depth recognition:", "Careful! Too Close");
+            if (listener != null) {
+                listener.onDepthWarningUpdate("Careful! " + objectLabel + " is too Close");
+            }
+        } else if ((adjustedDistance < 8) && isEqualToVehicle) {
+            Log.d("depth recognition:", "Careful! Too Close");
+            if (listener != null) {
+                listener.onDepthWarningUpdate("Careful! " + objectLabel + " is too Close");
+            }
+        } else {
+            if (listener != null) {
+                listener.onDepthWarningUpdate("");
+            }
         }
         //return String.format("%s D: %.2f D.A: %.2f", objectLabel, estimatedDepth, adjustedDistance);
         return String.format("%s D.A: %.2f", objectLabel, adjustedDistance);

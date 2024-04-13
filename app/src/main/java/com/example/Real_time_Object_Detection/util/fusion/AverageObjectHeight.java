@@ -32,6 +32,9 @@ public class AverageObjectHeight {
             case "laptop":
                 averageObjectHeight = 0.3f;
                 break;
+            case "tv":
+                averageObjectHeight = 0.35f;
+                break;
             case "keyboard":
                 averageObjectHeight = 0.2f;
                 break;

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    tools:context=".MainActivity">
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/mainlogoi"
+        android:scaleType="fitStart"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/introTitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enhance your awareness"
+        android:textSize="20sp"
+        android:layout_marginBottom="22dp"
+        android:paddingStart="26dp"
+        android:paddingEnd="26dp"
+        android:textAlignment="center"
+        android:textColor="#8c78ff"
+        app:layout_constraintBottom_toTopOf="@id/introText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/introText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This app detects objects and their distances, providing sound notifications for proximity alerts and vibrations for camera misalignment. \n Begin by tapping 'Start Real-Time Analysis.' Then, in the camera view, tap 'Check Proximity' to activate depth detection and receive audio alerts when objects are too close."
+        android:textSize="16sp"
+        android:layout_marginBottom="62dp"
+        android:paddingStart="26dp"
+        android:paddingEnd="26dp"
+        android:textAlignment="center"
+        android:textColor="#8c78ff"
+        app:layout_constraintBottom_toTopOf="@id/camera_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/camera_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClickCamera"
+        android:text="@string/objectButton"
+        android:textSize="18sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.88" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

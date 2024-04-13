@@ -44,5 +44,18 @@
         android:padding="10dp"
         android:background="#5e4fab"
         android:textColor="@android:color/black"/>
+    <TextView
+        android:id="@+id/warningTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/positionStatusTextView"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:text=""
+        android:textSize="12sp"
+        android:padding="10dp"
+        android:background="#5e4fab"
+        android:textColor="@android:color/holo_red_light"/>
 
 </RelativeLayout>
