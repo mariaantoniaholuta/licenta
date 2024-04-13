@@ -1,7 +1,10 @@
 package com.example.Real_time_Object_Detection;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 
 import com.example.Real_time_Object_Detection.model.VehicleLabel;
@@ -52,6 +55,11 @@ public class DepthRecognition {
 
         Log.d("estimated d:", String.valueOf(estimatedDepth));
         Log.d("adjusted d:", String.valueOf(adjustedDistance));
+        if(adjustedDistance < 0.7) {
+              Log.d("depth recognition:", "Careful! Too Close");
+//            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+//            vibrator.vibrate(VibrationEffect.createOneShot(100, 255));
+        }
         //return String.format("%s D: %.2f D.A: %.2f", objectLabel, estimatedDepth, adjustedDistance);
         return String.format("%s D.A: %.2f", objectLabel, adjustedDistance);
     }

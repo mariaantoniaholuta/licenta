@@ -27,7 +27,7 @@ public class BitmapUtil {
         int[] depthPixels = new int[depthArray.length];
         for (int i = 0; i < depthArray.length; i++) {
             int depthValue = (int) (255 * depthArray[i]);
-            // ARGB pixel with depth value for R, G și B
+            // ARGB - values for R, G și B
             depthPixels[i] = 0xFF000000 | (depthValue << 16) | (depthValue << 8) | depthValue;
         }
 

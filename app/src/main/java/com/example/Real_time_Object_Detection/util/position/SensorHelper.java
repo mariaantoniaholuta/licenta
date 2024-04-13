@@ -9,6 +9,7 @@ import android.hardware.SensorManager;
 import android.widget.TextView;
 
 public class SensorHelper implements SensorEventListener {
+
     private TextView positionStatusTextView;
     private VibrationHelper vibrationHelper;
     private SensorManager sensorManager;

@@ -98,7 +98,7 @@ public class DetectionObject {
 
     public void updatePositionX(float newPositionXMeasurement) {
         float updatedPositionX = this.positionXFilter.update(newPositionXMeasurement);
-        // Actualizează boundingBox cu noua poziție X (și potențial Y dacă extinzi la ambele axe)
+        // update boundingBox
         this.boundingBox.left = (int)(updatedPositionX - boundingBox.width() / 2.0);
         this.boundingBox.right = (int)(updatedPositionX + boundingBox.width() / 2.0);
     }

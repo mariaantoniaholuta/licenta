@@ -1,12 +1,19 @@
 package com.example.Real_time_Object_Detection;
 
+import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.parseOrientationFromText;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -28,10 +35,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import com.example.Real_time_Object_Detection.depthMap.MiDASModel;
+import com.example.Real_time_Object_Detection.util.position.FrameStabilizer;
 import com.example.Real_time_Object_Detection.util.position.SensorHelper;
 import com.example.Real_time_Object_Detection.util.position.VibrationHelper;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
@@ -51,6 +62,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     private TextView positionStatusTextView;
 
+    private FrameStabilizer stabilizer;
+
     private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -66,6 +79,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        stabilizer = new FrameStabilizer();
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -103,6 +117,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         cameraView = findViewById(R.id.frame_Surface);
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
+        cameraView.setMaxFrameSize(640, 480);
     }
 
     private void loadMiDASModel() {
@@ -116,12 +131,14 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private void setupButtons() {
         Button depthToggleButton = findViewById(R.id.depth_toggle_button);
         depthToggleButton.setOnClickListener(v -> {
+            surroundingsEnabled = false;
             depthEnabled = !depthEnabled;
             Log.d(LOG_TAG, "Depth Mode toggled");
         });
 
         Button surroundingsCheckButton = findViewById(R.id.surroundings_check_button);
         surroundingsCheckButton.setOnClickListener(v -> {
+            depthEnabled = false;
             surroundingsEnabled = !surroundingsEnabled;
             Log.d(LOG_TAG, "Surroundings Check toggled");
         });
@@ -174,12 +191,26 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         rgbaMat = inputFrame.rgba();
         grayMat = inputFrame.gray();
 
+        Bitmap bitmap = Bitmap.createBitmap(rgbaMat.cols(), rgbaMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(rgbaMat, bitmap);
+
+        Log.d(LOG_TAG, (String) positionStatusTextView.getText());
+
+        float[] currentOrientation = parseOrientationFromText((String) positionStatusTextView.getText());
+
+        float[] normalOrientation = {104.76f, 80.75f, 1.02f};
+        stabilizer.setReferenceOrientation(normalOrientation);
+
+        stabilizer.updateOrientation(currentOrientation);
+
+        //Mat stabilizedMat = stabilizer.stabilizeFrame(rgbaMat, currentOrientation);
+        Mat stabilizedMat = rgbaMat;
         Mat outputMat = new Mat();
 
         if (depthEnabled) {
             outputMat = processDepthMode();
         } else if (surroundingsEnabled) {
-            outputMat = processSurroundingsCheck();
+            outputMat = processSurroundingsCheck(stabilizedMat);
         } else {
             outputMat = processNormalMode();
         }
@@ -202,10 +233,11 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         return resizedDepthMat;
     }
 
-    private Mat processSurroundingsCheck() {
+
+    private Mat processSurroundingsCheck(Mat stabilizedMat) {
         ImageRecognition imageRecognition = null;
-        Bitmap bitmap = Bitmap.createBitmap(rgbaMat.cols(), rgbaMat.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(rgbaMat, bitmap);
+        Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(stabilizedMat, bitmap);
 
         Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
         try {
@@ -213,8 +245,12 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return imageRecognition.detectObjectsInImageAndAnalyzeDepth(rgbaMat, depthMapBitmap);
+        return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
+        //return imageRecognition.detectObjectsInImage(rgbaMat);
+
     }
+
+
 
     private Mat processNormalMode() {
         ImageRecognition imageRecognition = null;
@@ -230,4 +266,6 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
     }
+
+
 }

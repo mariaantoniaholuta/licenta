@@ -30,7 +30,6 @@ public class VibrationHelper {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, intensity));
-
         } else {
             vibrator.vibrate(100);
         }
