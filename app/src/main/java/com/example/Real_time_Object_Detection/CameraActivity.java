@@ -3,19 +3,9 @@ package com.example.Real_time_Object_Detection;
 import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.parseOrientationFromText;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.Window;
@@ -40,8 +30,10 @@ import com.example.Real_time_Object_Detection.util.position.SensorHelper;
 import com.example.Real_time_Object_Detection.util.position.VibrationHelper;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import android.util.DisplayMetrics;
 import android.widget.TextView;
@@ -63,6 +55,34 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private TextView positionStatusTextView;
 
     private FrameStabilizer stabilizer;
+
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private Mat processSurroundingsCheck(Mat stabilizedMat) {
+        Future<Mat> future = executor.submit(() -> {
+            Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(stabilizedMat, bitmap);
+
+            Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
+            ImageRecognition imageRecognition;
+            try {
+                imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt");
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error loading model", e);
+                return stabilizedMat;
+            }
+            return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
+        });
+
+        try {
+            return future.get(); // block until the computation is done
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "Error processing image", e);
+            return stabilizedMat;
+        }
+    }
+
+
 
     private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -117,7 +137,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         cameraView = findViewById(R.id.frame_Surface);
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
-        cameraView.setMaxFrameSize(640, 480);
+        cameraView.setMaxFrameSize(740, 580);
     }
 
     private void loadMiDASModel() {
@@ -188,6 +208,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        long startTime = System.currentTimeMillis();
         rgbaMat = inputFrame.rgba();
         grayMat = inputFrame.gray();
 
@@ -215,6 +236,10 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             outputMat = processNormalMode();
         }
 
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        Log.d(LOG_TAG, "Frame processed" + surroundingsEnabled + duration + " ms");
+
         return outputMat;
     }
 
@@ -234,7 +259,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     }
 
 
-    private Mat processSurroundingsCheck(Mat stabilizedMat) {
+    private Mat processSurroundingsCheck1(Mat stabilizedMat) {
         ImageRecognition imageRecognition = null;
         Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(stabilizedMat, bitmap);
@@ -246,11 +271,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             e.printStackTrace();
         }
         return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
-        //return imageRecognition.detectObjectsInImage(rgbaMat);
 
     }
-
-
 
     private Mat processNormalMode() {
         ImageRecognition imageRecognition = null;

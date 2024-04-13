@@ -123,7 +123,7 @@ public class ImageRecognition {
         for (int i = 0; i < MAX_DETECTIONS; i++) {
             float classIndex = (float) Array.get(Array.get(classes, 0), i);
             float score = (float) Array.get(Array.get(scores, 0), i);
-            if (score > 0.6) {
+            if (score > 0.7) {
                 Object box = Array.get(Array.get(boxes, 0), i);
 
                 float top = (float) Array.get(box, 0) * picHeight;
