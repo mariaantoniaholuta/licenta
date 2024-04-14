@@ -66,21 +66,6 @@ public class DepthRecognition {
         Log.d("estimated d:", String.valueOf(estimatedDepth));
         Log.d("adjusted d:", String.valueOf(adjustedDistance));
 
-        if ((adjustedDistance < 1) && (objectLabel.equals("person"))) {
-            Log.d("depth recognition:", "Careful! Too Close");
-            if (listener != null) {
-                listener.onDepthWarningUpdate("Careful! " + objectLabel + " is too Close");
-            }
-        } else if ((adjustedDistance < 8) && isEqualToVehicle) {
-            Log.d("depth recognition:", "Careful! Too Close");
-            if (listener != null) {
-                listener.onDepthWarningUpdate("Careful! " + objectLabel + " is too Close");
-            }
-        } else {
-            if (listener != null) {
-                listener.onDepthWarningUpdate("");
-            }
-        }
         //return String.format("%s D: %.2f D.A: %.2f", objectLabel, estimatedDepth, adjustedDistance);
         return String.format("%s D.A: %.2f", objectLabel, adjustedDistance);
     }

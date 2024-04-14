@@ -22,6 +22,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -61,32 +62,6 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private FrameStabilizer stabilizer;
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private Mat processSurroundingsCheck(Mat stabilizedMat) {
-        Future<Mat> future = executor.submit(() -> {
-            Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(stabilizedMat, bitmap);
-
-            Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
-            ImageRecognition imageRecognition;
-            try {
-                imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt");
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error loading model", e);
-                return stabilizedMat;
-            }
-            return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
-        });
-
-        try {
-            return future.get(); // block until the computation is done
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(LOG_TAG, "Error processing image", e);
-            return stabilizedMat;
-        }
-    }
-
-
 
     private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -226,34 +201,54 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         rgbaMat = inputFrame.rgba();
         grayMat = inputFrame.gray();
 
+        //right lines
         Point startTopRight = new Point(0, rgbaMat.rows() * 1 / 8);
         Point endRight = new Point(rgbaMat.cols()/1.2, rgbaMat.rows() * 1 / 8);
         Point cornerBottomRight = new Point(rgbaMat.cols(), 0);
-        //right lines
-        Imgproc.line(rgbaMat, startTopRight, endRight, new Scalar(140,120,255), 1);
-        Imgproc.line(rgbaMat, endRight, cornerBottomRight, new Scalar(140,120,255), 2);
 
         //left lines
         Point startTopLeft = new Point(0, rgbaMat.rows() * 1 / 1.15);
         Point endLeft = new Point(endRight.x, rgbaMat.rows() - (rgbaMat.rows() * 1 / 8));
         Point cornerBottomLeft = new Point(rgbaMat.cols(), rgbaMat.rows());
 
-        Imgproc.line(rgbaMat, startTopLeft, endLeft, new Scalar(140,120,255), 1);
-        Imgproc.line(rgbaMat, endLeft, cornerBottomLeft, new Scalar(140,120,255), 2);
+        MatOfPoint trapezoidPoints = new MatOfPoint(
+                startTopRight,
+                endRight,
+                cornerBottomRight,
+                cornerBottomLeft,
+                endLeft,
+                startTopLeft
+        );
 
-        Bitmap bitmap = Bitmap.createBitmap(rgbaMat.cols(), rgbaMat.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(rgbaMat, bitmap);
+        Mat mask = Mat.zeros(rgbaMat.size(), CvType.CV_8UC1);
+        Imgproc.fillConvexPoly(mask, trapezoidPoints, new Scalar(255));
+        Mat maskedImage = new Mat();
+
+        rgbaMat.copyTo(maskedImage, mask);
+
+        Bitmap bitmap = Bitmap.createBitmap(maskedImage.cols(), maskedImage.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(maskedImage, bitmap);
 
         Log.d(LOG_TAG, (String) positionStatusTextView.getText());
 
         float[] currentOrientation = parseOrientationFromText((String) positionStatusTextView.getText());
 
-        float[] normalOrientation = {104.76f, 80.75f, 1.02f};
+        float[] normalOrientation = {104.76f, 82.00f, 1.02f};
         stabilizer.setReferenceOrientation(normalOrientation);
 
         stabilizer.updateOrientation(currentOrientation);
 
-        Mat stabilizedMat = stabilizer.stabilizeFrame(rgbaMat, currentOrientation);
+        Mat stabilizedMat = new Mat();
+        if (!surroundingsEnabled) {
+           stabilizedMat = stabilizer.stabilizeFrame(rgbaMat, currentOrientation);
+        } else {
+            Imgproc.line(maskedImage, startTopRight, endRight, new Scalar(140,120,255), 3);
+            Imgproc.line(maskedImage, endRight, cornerBottomRight, new Scalar(140,120,255), 3);
+            Imgproc.line(maskedImage, startTopLeft, endLeft, new Scalar(140,120,255), 3);
+            Imgproc.line(maskedImage, endLeft, cornerBottomLeft, new Scalar(140,120,255), 3);
+
+            stabilizedMat = stabilizer.stabilizeFrame(maskedImage, currentOrientation);
+        }
         //Mat stabilizedMat = rgbaMat;
         Mat outputMat = new Mat();
 
@@ -262,7 +257,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         } else if (surroundingsEnabled) {
             outputMat = processSurroundingsCheck(stabilizedMat);
         } else {
-            outputMat = processNormalMode();
+            outputMat = processNormalMode(stabilizedMat);
         }
 
         long endTime = System.currentTimeMillis();
@@ -287,30 +282,53 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         return resizedDepthMat;
     }
 
+    private Mat processNormalMode(Mat stabilizedMat) {
+        ImageRecognition imageRecognition = null;
+        try {
+            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageRecognition.detectObjectsInImage(stabilizedMat);
+    }
 
-    private Mat processSurroundingsCheck1(Mat stabilizedMat) {
+    private Mat processSurroundingsCheck(Mat stabilizedMat) {
+        Future<Mat> future = executor.submit(() -> {
+            Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(stabilizedMat, bitmap);
+
+            Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
+            ImageRecognition imageRecognition;
+            try {
+                imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error loading model", e);
+                return stabilizedMat;
+            }
+            return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
+        });
+
+        try {
+            return future.get(); // block until the computation is done
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "Error processing image", e);
+            return stabilizedMat;
+        }
+    }
+
+    private Mat processSurroundingsCheckV2(Mat stabilizedMat) {
         ImageRecognition imageRecognition = null;
         Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(stabilizedMat, bitmap);
 
         Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
         try {
-            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt");
+            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
 
-    }
-
-    private Mat processNormalMode() {
-        ImageRecognition imageRecognition = null;
-        try {
-            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return imageRecognition.detectObjectsInImage(rgbaMat);
     }
 
     @Override

@@ -4,10 +4,12 @@ import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.
 import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.isVehicle;
 import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.updateTrackedObjects;
 import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.getAdjustedDistanceValue;
+import static com.example.Real_time_Object_Detection.util.warnings.WarningText.generateWarnings;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.util.Log;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -43,10 +45,18 @@ public class ImageRecognition {
     List<DetectionObject> trackedObjects = new ArrayList<>();
     int nextObjectId = 1;
 
-    ImageRecognition(int targetSize, AssetManager assets, String modelFile, String labelsFile) throws IOException {
+    public interface OnDepthWarningListener {
+        void onDepthWarningUpdate(String warningMessage);
+    }
+
+    private static DepthRecognition.OnDepthWarningListener listener;
+
+
+    ImageRecognition(int targetSize, AssetManager assets, String modelFile, String labelsFile, DepthRecognition.OnDepthWarningListener listener) throws IOException {
         Interpreter.Options interpreterOptions = new Interpreter.Options();
         this.delegateGPU = new GpuDelegate();
         this.imageSize = targetSize;
+        this.listener = listener;
         interpreterOptions.addDelegate(delegateGPU);
         interpreterOptions.setNumThreads(THREAD_COUNT);
 
@@ -206,17 +216,22 @@ public class ImageRecognition {
                 DetectionObject newObj = new DetectionObject(boundingBox, objectLabel, scoreOfDetection, adjustedDistance, nextObjectId++);
                 currentFrameObjects.add(newObj);
 
+                //generateWarnings(newObj, objectLabel, adjustedDistance);
                 Imgproc.putText(processedImage, depthAnnotation, new Point(left, top - 10), 3,1, new Scalar(0, 255, 255), 2);
 
             }
         }
-
+        //Log.d("Tracking Info", "Number of tracked objects before update: " + trackedObjects.size());
         // update and draw based on trackedObjects
         updateTrackedObjects(currentFrameObjects, trackedObjects);
+        //Log.d("Tracking Info", "Number of tracked objects after update: " + trackedObjects.size());
+        generateWarnings(currentFrameObjects, processedImage, trackedObjects, listener);
         drawBoundingBoxes(processedImage, trackedObjects);
 
         Core.flip(processedImage.t(), inputImage, 0);
         return inputImage;
     }
+
+
 
 }
