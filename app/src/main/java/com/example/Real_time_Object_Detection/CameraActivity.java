@@ -6,8 +6,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -33,6 +35,7 @@ import com.example.Real_time_Object_Detection.util.position.SensorHelper;
 import com.example.Real_time_Object_Detection.util.position.VibrationHelper;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +44,7 @@ import java.util.concurrent.Future;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
-public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, DepthRecognition.OnDepthWarningListener {
+public class CameraActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, CameraBridgeViewBase.CvCameraViewListener2, DepthRecognition.OnDepthWarningListener {
     private static final String LOG_TAG = "CameraActivity";
     private CameraBridgeViewBase cameraView;
     private Mat rgbaMat;
@@ -62,6 +65,56 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private FrameStabilizer stabilizer;
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private TextToSpeech tts;
+    private boolean ttsInitialized = false;
+
+    private long lastSpeakTime = 0;
+    private static final long SPEAK_INTERVAL_MS = 5000;
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int result = tts.setLanguage(Locale.US);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA ||
+                    result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+                ttsInitialized = true;
+                //speakOutIntro("Camera is On. Click on Check Proximity button at the bottom right to activate depth detection and receive audio alerts");
+                speakOut("The camera is now active.");
+            }
+        } else {
+            Log.e("TTS", "Initialization Failed!");
+        }
+    }
+
+    public void onClickDescribeActions(View v) {
+        speakOut("Describing: To start depth detection and receive proximity alerts, tap the 'Check Proximity' button located at the bottom right of the screen.");
+    }
+
+    @Override
+    public void onDepthWarningUpdate(String warningMessage) {
+        runOnUiThread(() -> {
+            if (!warningMessage.equals(warningTextView.getText().toString())) {
+                warningTextView.setText(warningMessage);
+                if (!warningMessage.isEmpty()) {
+                    speakOut(warningMessage);
+                }
+            }
+        });
+    }
+
+    private void speakOut(String text) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastSpeakTime > SPEAK_INTERVAL_MS) {
+            if (ttsInitialized) {
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                lastSpeakTime = currentTime;
+            }
+        }
+    }
 
     private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -101,13 +154,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
         vibrationHelper = new VibrationHelper(this);
         sensorHelper = new SensorHelper(this, positionStatusTextView, vibrationHelper);
-    }
-
-    @Override
-    public void onDepthWarningUpdate(String warningMessage) {
-        runOnUiThread(() -> {
-            warningTextView.setText(warningMessage);
-        });
+        tts = new TextToSpeech(this, this);
     }
 
     private void initializeScreen() {
@@ -143,15 +190,26 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             surroundingsEnabled = false;
             depthEnabled = !depthEnabled;
             Log.d(LOG_TAG, "Depth Mode toggled");
-        });
+            speakOutButton("Check Proximity Deactivated.");
+         });
 
         Button surroundingsCheckButton = findViewById(R.id.surroundings_check_button);
         surroundingsCheckButton.setOnClickListener(v -> {
             depthEnabled = false;
             surroundingsEnabled = !surroundingsEnabled;
             Log.d(LOG_TAG, "Surroundings Check toggled");
+            if (surroundingsEnabled) {
+                speakOutButton("Check Proximity Activated.");
+            } else {
+                speakOutButton("Check Proximity Deactivated.");
+            }
         });
+    }
 
+    private void speakOutButton(String text) {
+        if (ttsInitialized) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
     }
 
     @Override
@@ -178,6 +236,10 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     @Override
     public void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
         super.onDestroy();
         if (cameraView != null) {
             cameraView.disableView();

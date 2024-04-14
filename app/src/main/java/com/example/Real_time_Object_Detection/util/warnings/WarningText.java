@@ -23,7 +23,7 @@ public class WarningText {
 
     private void setWarning(String objectName) {
         String text;
-        text = String.format("Careful! " + objectName + " is too Close");
+        text = String.format("Careful! A" + objectName + " is too Close");
         updatePositionStatus(text);
     }
 
@@ -35,6 +35,8 @@ public class WarningText {
             }
         });
     }
+
+
 
     public static void generateWarnings(List<DetectionObject> currentFrameObjects, Mat processedImage, List<DetectionObject> trackedObjects, DepthRecognition.OnDepthWarningListener listener) {
         Log.d("Tracking Info", "Number of tracked objects in gener: " + trackedObjects.size());
@@ -59,17 +61,17 @@ public class WarningText {
 
             if (isVehicle(objectLabel)) {
                 if (adjustedDistance < 5) {
-                    warningMessage = "Careful! " + objectLabel + " is too Close";
+                    warningMessage = "Careful! A " + objectLabel + " is too Close";
                 } else if (adjustedDistance < 15 && isGettingCloser) {
-                    warningMessage = "Careful! " + objectLabel + " is getting closer";
+                    warningMessage = "Careful! A" + objectLabel + " is getting closer";
                 } else {
                     warningMessage = "";
                 }
             } else {
                 if (adjustedDistance < 1 && objectLabel.equals("person")) {
-                    warningMessage = "Careful! " + objectLabel + " is too Close";
+                    warningMessage = "Careful! A " + objectLabel + " is too Close";
                 } else if (adjustedDistance < 2 && isGettingCloser && objectLabel.equals("person")) {
-                    warningMessage = "Careful! " + objectLabel + " is getting closer";
+                    warningMessage = "Careful! A " + objectLabel + " is getting closer";
                 } else {
                     warningMessage = "";
                 }

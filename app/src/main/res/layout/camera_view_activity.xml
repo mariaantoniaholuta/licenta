@@ -57,5 +57,20 @@
         android:padding="10dp"
         android:background="#5e4fab"
         android:textColor="@android:color/holo_red_light"/>
+    <TextView
+        android:id="@+id/describe_actions_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="onClickDescribeActions"
+        android:text="Describe"
+        android:textSize="18sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        android:textColor="#9d65fc"
+        android:background="@drawable/textview_border"/>
 
 </RelativeLayout>

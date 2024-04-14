@@ -33,7 +33,7 @@ public class FrameStabilizer {
 
     public Mat stabilizeFrame(Mat inputFrame, float[] currentOrientation) {
         if (referenceOrientation == null || currentOrientation == null || currentOrientation.length < 3) {
-            return inputFrame; // Return original frame if no reference or current orientation is set
+            return inputFrame; // original frame if no reference or current orientation is set
         }
 
         Log.d("FrameStabilizer", "Current orientation: " + Arrays.toString(currentOrientation));

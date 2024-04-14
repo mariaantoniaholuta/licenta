@@ -34,10 +34,30 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
+        android:id="@+id/describe_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClickDescribe"
+        android:text="Describe"
+        android:textSize="18sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
+        android:textColor="#9d65fc"
+        android:background="@drawable/textview_border"/>
+
+    <TextView
         android:id="@+id/introText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="This app detects objects and their distances, providing sound notifications for proximity alerts and vibrations for camera misalignment. \n Begin by tapping 'Start Real-Time Analysis.' Then, in the camera view, tap 'Check Proximity' to activate depth detection and receive audio alerts when objects are too close."
+        android:text="This app detects objects and their distances, providing sound notifications for proximity alerts and vibrations for camera misalignment. \n Describe Action Button is at the top right corner. Begin by tapping 'Start Real-Time Analysis at the bottom center."
         android:textSize="16sp"
         android:layout_marginBottom="62dp"
         android:paddingStart="26dp"
