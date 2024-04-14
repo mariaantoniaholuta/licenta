@@ -25,7 +25,7 @@ public class SensorHelper implements SensorEventListener {
 
     private static final float FILTER_COEFFICIENT = 0.8f;
     public static final float VERTICAL_THRESHOLD_DEGREES = 25.0f;
-    public static final float PITCH_UPRIGHT_THRESHOLD_DEGREES = 22.0f;
+    public static final float PITCH_UPRIGHT_THRESHOLD_DEGREES = 12.0f;
 
     public interface SensorListener {
         void onOrientationChanged(float azimuth, float pitch, float roll);
@@ -95,7 +95,7 @@ public class SensorHelper implements SensorEventListener {
 
     private void updatePositionStatusBasedOnOrientation(float pitch, float roll, float azimuth) {
         //boolean isHorizontal = (Math.abs(pitch) < HORIZONTAL_THRESHOLD_DEGREES);
-        boolean isHorizontal = (pitch <= -90 + PITCH_UPRIGHT_THRESHOLD_DEGREES) || (pitch >= 90 - PITCH_UPRIGHT_THRESHOLD_DEGREES);
+        boolean isHorizontal = (pitch <= 90) && (pitch >= 73);
         boolean isVertical = (Math.abs(roll) < VERTICAL_THRESHOLD_DEGREES);
         float normalAzimuth = 95f;
         float normalPitch = 85f;

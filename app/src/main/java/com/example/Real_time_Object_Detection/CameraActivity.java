@@ -22,6 +22,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import com.example.Real_time_Object_Detection.depthMap.MiDASModel;
@@ -224,6 +226,21 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         rgbaMat = inputFrame.rgba();
         grayMat = inputFrame.gray();
 
+        Point startTopRight = new Point(0, rgbaMat.rows() * 1 / 8);
+        Point endRight = new Point(rgbaMat.cols()/1.2, rgbaMat.rows() * 1 / 8);
+        Point cornerBottomRight = new Point(rgbaMat.cols(), 0);
+        //right lines
+        Imgproc.line(rgbaMat, startTopRight, endRight, new Scalar(140,120,255), 1);
+        Imgproc.line(rgbaMat, endRight, cornerBottomRight, new Scalar(140,120,255), 2);
+
+        //left lines
+        Point startTopLeft = new Point(0, rgbaMat.rows() * 1 / 1.15);
+        Point endLeft = new Point(endRight.x, rgbaMat.rows() - (rgbaMat.rows() * 1 / 8));
+        Point cornerBottomLeft = new Point(rgbaMat.cols(), rgbaMat.rows());
+
+        Imgproc.line(rgbaMat, startTopLeft, endLeft, new Scalar(140,120,255), 1);
+        Imgproc.line(rgbaMat, endLeft, cornerBottomLeft, new Scalar(140,120,255), 2);
+
         Bitmap bitmap = Bitmap.createBitmap(rgbaMat.cols(), rgbaMat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(rgbaMat, bitmap);
 
@@ -236,8 +253,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
         stabilizer.updateOrientation(currentOrientation);
 
-        //Mat stabilizedMat = stabilizer.stabilizeFrame(rgbaMat, currentOrientation);
-        Mat stabilizedMat = rgbaMat;
+        Mat stabilizedMat = stabilizer.stabilizeFrame(rgbaMat, currentOrientation);
+        //Mat stabilizedMat = rgbaMat;
         Mat outputMat = new Mat();
 
         if (depthEnabled) {
