@@ -38,6 +38,15 @@ public class AverageObjectHeight {
             case "keyboard":
                 averageObjectHeight = 0.2f;
                 break;
+            case "apple":
+                averageObjectHeight = 0.03f;
+                break;
+            case "cup":
+                averageObjectHeight = 0.04f;
+                break;
+            case "bowl":
+                averageObjectHeight = 0.05f;
+                break;
         }
         return averageObjectHeight;
     }

@@ -60,10 +60,12 @@ public class WarningText {
             Log.d("Tracking Info", "is closer: " + isGettingCloser);
 
             if (isVehicle(objectLabel)) {
-                if (adjustedDistance < 5) {
+                if ((adjustedDistance < 5) && !objectLabel.equals("bicycle")) {
                     warningMessage = "Careful! A " + objectLabel + " is too Close";
+                } else if ((adjustedDistance < 2.7f) && objectLabel.equals("bicycle")) {
+                    warningMessage = "Careful! A " + objectLabel + " is too close";
                 } else if (adjustedDistance < 15 && isGettingCloser) {
-                    warningMessage = "Careful! A" + objectLabel + " is getting closer";
+                    warningMessage = "Careful! A " + objectLabel + " is getting closer";
                 } else {
                     warningMessage = "";
                 }

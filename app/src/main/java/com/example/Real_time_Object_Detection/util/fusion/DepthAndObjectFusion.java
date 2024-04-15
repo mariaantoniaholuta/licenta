@@ -15,7 +15,7 @@ public class DepthAndObjectFusion {
         float boundingBoxWidth = boundingBox.width();
         float averageObjectHeight = getAverageObjectHeight(objectType);
 
-        String[] heightLabels = {"person", "car", "car", "truck", "motorcycle", "bicycle", "dog", "cat", "traffic light", "laptop", "keyboard", "tv"};
+        String[] heightLabels = {"person", "car", "car", "truck", "motorcycle", "bicycle", "dog", "cat", "traffic light", "laptop", "keyboard", "tv", "apple", "cup", "bowl"};
 
         // check if the object label is in the height list
         boolean isHeightLabels = false;

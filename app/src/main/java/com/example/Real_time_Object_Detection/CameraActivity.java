@@ -351,7 +351,7 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return imageRecognition.detectObjectsInImage(stabilizedMat);
+        return imageRecognition.detectObjectsInImage(rgbaMat);
     }
 
     private Mat processSurroundingsCheck(Mat stabilizedMat) {
