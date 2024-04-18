@@ -47,6 +47,9 @@ public class AverageObjectHeight {
             case "bowl":
                 averageObjectHeight = 0.05f;
                 break;
+            case "chair":
+                averageObjectHeight = 0.8f;
+                break;
         }
         return averageObjectHeight;
     }

@@ -3,15 +3,16 @@ package com.example.Real_time_Object_Detection.util.formats;
 import android.util.Log;
 
 public class ValuesExtracter {
-    //String.format("%s D: %.2f D.A: %.2f", objectLabel, estimatedDepth, adjustedDistance);
+    //String.format("%s: %.2fm", objectLabel, estimatedDepth, adjustedDistance);
     public static float getAdjustedDistanceValue(String formattedString) {
-        String[] parts = formattedString.split("D\\.A:\\s+");
+        String[] parts = formattedString.split(": ");
         if (parts.length < 2) {
-            throw new IllegalArgumentException("Formatted string does not contain D.A.:");
+            throw new IllegalArgumentException("Formatted string does not contain :");
         }
 
-        String valueString = parts[1].trim();
-        return Float.parseFloat(valueString);
+        String valuePart = parts[1].trim();
+        String numberString = valuePart.split("m")[0].trim();
+        return Float.parseFloat(numberString);
     }
 
     public static float[] parseOrientationFromText(String text) {

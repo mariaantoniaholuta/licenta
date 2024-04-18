@@ -33,6 +33,8 @@ import com.example.Real_time_Object_Detection.depthMap.MiDASModel;
 import com.example.Real_time_Object_Detection.util.position.FrameStabilizer;
 import com.example.Real_time_Object_Detection.util.position.SensorHelper;
 import com.example.Real_time_Object_Detection.util.position.VibrationHelper;
+import com.example.Real_time_Object_Detection.util.warnings_environment.Environment;
+
 
 import java.io.IOException;
 import java.util.Locale;
@@ -51,6 +53,8 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     private Mat grayMat;
     private boolean depthEnabled = false;
     private boolean surroundingsEnabled = false;
+    private boolean environmentEnabled = false;
+    private boolean trafficLightEnabled = false;
     private MiDASModel miDASModel;
 
     public static float DisplayHeightInPixels;
@@ -70,7 +74,10 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     private boolean ttsInitialized = false;
 
     private long lastSpeakTime = 0;
-    private static final long SPEAK_INTERVAL_MS = 5000;
+    private static final long SPEAK_INTERVAL_MS = 3000;
+
+    private Environment environment;
+
 
     @Override
     public void onInit(int status) {
@@ -91,7 +98,7 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     }
 
     public void onClickDescribeActions(View v) {
-        speakOut("Describing: To start depth detection and receive proximity alerts, tap the 'Check Proximity' button located at the bottom right of the screen.");
+        speakOut("To start depth detection and alerts, tap 'Check Proximity' at the bottom right. For environment details and object distances, tap 'Describe Environment' at the bottom left. For traffic light updates, tap 'Traffic Light Detection' just above the bottom left button.");
     }
 
     @Override
@@ -155,6 +162,8 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
         vibrationHelper = new VibrationHelper(this);
         sensorHelper = new SensorHelper(this, positionStatusTextView, vibrationHelper);
         tts = new TextToSpeech(this, this);
+
+        environment = new Environment(tts);
     }
 
     private void initializeScreen() {
@@ -187,22 +196,48 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     private void setupButtons() {
         Button depthToggleButton = findViewById(R.id.depth_toggle_button);
         depthToggleButton.setOnClickListener(v -> {
-            surroundingsEnabled = false;
             depthEnabled = !depthEnabled;
             Log.d(LOG_TAG, "Depth Mode toggled");
-            speakOutButton("Check Proximity Deactivated.");
+            //speakOutButton("Check Proximity Deactivated.");
          });
 
         Button surroundingsCheckButton = findViewById(R.id.surroundings_check_button);
         surroundingsCheckButton.setOnClickListener(v -> {
-            depthEnabled = false;
             surroundingsEnabled = !surroundingsEnabled;
             Log.d(LOG_TAG, "Surroundings Check toggled");
             if (surroundingsEnabled) {
+                depthEnabled = false;
+                environmentEnabled = false;
+                trafficLightEnabled = false;
                 speakOutButton("Check Proximity Activated.");
             } else {
                 speakOutButton("Check Proximity Deactivated.");
             }
+        });
+
+        Button environmentButton = findViewById(R.id.describe_environment_button);
+        environmentButton.setOnClickListener(v -> {
+            environmentEnabled = !environmentEnabled;
+            if (environmentEnabled) {
+                depthEnabled = false;
+                surroundingsEnabled = false;
+                trafficLightEnabled = false;
+                environment.resetSpoke();
+                //environment.speakOut();
+            }
+            Log.d(LOG_TAG, "Environment description");
+        });
+
+        Button trafficLightButton = findViewById(R.id.traffic_lights_button);
+        trafficLightButton.setOnClickListener(v -> {
+            trafficLightEnabled = !trafficLightEnabled;
+            if (trafficLightEnabled) {
+                depthEnabled = false;
+                surroundingsEnabled = false;
+                environmentEnabled = false;
+                speakOutButton("Traffic Light Detection Activated. ");
+            }
+            Log.d(LOG_TAG, "Traffic Light activated");
         });
     }
 
@@ -216,6 +251,7 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     protected void onResume() {
         super.onResume();
         sensorHelper.start();
+        Environment.getInstance(tts).resetSpoke();
         if (!OpenCVLoader.initDebug()) {
             Log.d(LOG_TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCallback);
@@ -318,6 +354,11 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
             outputMat = processDepthMode();
         } else if (surroundingsEnabled) {
             outputMat = processSurroundingsCheck(stabilizedMat);
+        } else if (environmentEnabled) {
+            outputMat = processEnvironment(stabilizedMat);
+            environment.speakOut();
+        } else if (trafficLightEnabled) {
+            outputMat = processTrafficLightMode(stabilizedMat);
         } else {
             outputMat = processNormalMode(stabilizedMat);
         }
@@ -347,11 +388,21 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     private Mat processNormalMode(Mat stabilizedMat) {
         ImageRecognition imageRecognition = null;
         try {
-            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this);
+            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this, tts, environment);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return imageRecognition.detectObjectsInImage(rgbaMat);
+    }
+
+    private Mat processTrafficLightMode(Mat stabilizedMat) {
+        ImageRecognition imageRecognition = null;
+        try {
+            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this, tts, environment);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageRecognition.detectTrafficLight(rgbaMat);
     }
 
     private Mat processSurroundingsCheck(Mat stabilizedMat) {
@@ -362,12 +413,36 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
             Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
             ImageRecognition imageRecognition;
             try {
-                imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this);
+                imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this, tts, environment);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error loading model", e);
                 return stabilizedMat;
             }
             return imageRecognition.detectObjectsInImageAndAnalyzeDepth(stabilizedMat, depthMapBitmap);
+        });
+
+        try {
+            return future.get(); // block until the computation is done
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "Error processing image", e);
+            return stabilizedMat;
+        }
+    }
+
+    private Mat processEnvironment(Mat stabilizedMat) {
+        Future<Mat> future = executor.submit(() -> {
+            Bitmap bitmap = Bitmap.createBitmap(stabilizedMat.cols(), stabilizedMat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(stabilizedMat, bitmap);
+
+            Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
+            ImageRecognition imageRecognition;
+            try {
+                imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this, tts, environment);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error loading model", e);
+                return stabilizedMat;
+            }
+            return imageRecognition.detectObjectsDepthAndDescribe(stabilizedMat, depthMapBitmap);
         });
 
         try {
@@ -385,7 +460,7 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
 
         Bitmap depthMapBitmap = miDASModel.getDepthMap(bitmap);
         try {
-            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this);
+            imageRecognition = new ImageRecognition(300, getAssets(), "ssd_mobilenet.tflite", "labelmap.txt", this, tts, environment);
         } catch (IOException e) {
             e.printStackTrace();
         }

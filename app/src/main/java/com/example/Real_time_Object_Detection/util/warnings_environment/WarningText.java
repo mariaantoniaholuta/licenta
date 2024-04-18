@@ -1,4 +1,4 @@
-package com.example.Real_time_Object_Detection.util.warnings;
+package com.example.Real_time_Object_Detection.util.warnings_environment;
 
 import static com.example.Real_time_Object_Detection.util.tracker.TrackedObject.isVehicle;
 
@@ -62,7 +62,7 @@ public class WarningText {
             if (isVehicle(objectLabel)) {
                 if ((adjustedDistance < 5) && !objectLabel.equals("bicycle")) {
                     warningMessage = "Careful! A " + objectLabel + " is too Close";
-                } else if ((adjustedDistance < 2.7f) && objectLabel.equals("bicycle")) {
+                } else if ((adjustedDistance < 4) && objectLabel.equals("bicycle")) {
                     warningMessage = "Careful! A " + objectLabel + " is too close";
                 } else if (adjustedDistance < 15 && isGettingCloser) {
                     warningMessage = "Careful! A " + objectLabel + " is getting closer";
@@ -70,9 +70,9 @@ public class WarningText {
                     warningMessage = "";
                 }
             } else {
-                if (adjustedDistance < 1 && objectLabel.equals("person")) {
+                if (adjustedDistance < 1.5f && objectLabel.equals("person")) {
                     warningMessage = "Careful! A " + objectLabel + " is too Close";
-                } else if (adjustedDistance < 2 && isGettingCloser && objectLabel.equals("person")) {
+                } else if (adjustedDistance < 3 && isGettingCloser && objectLabel.equals("person")) {
                     warningMessage = "Careful! A " + objectLabel + " is getting closer";
                 } else {
                     warningMessage = "";

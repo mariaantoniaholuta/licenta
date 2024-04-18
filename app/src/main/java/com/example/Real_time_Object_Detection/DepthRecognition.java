@@ -67,6 +67,6 @@ public class DepthRecognition {
         Log.d("adjusted d:", String.valueOf(adjustedDistance));
 
         //return String.format("%s D: %.2f D.A: %.2f", objectLabel, estimatedDepth, adjustedDistance);
-        return String.format("%s D.A: %.2f", objectLabel, adjustedDistance);
+        return String.format("%s: %.2fm", objectLabel, adjustedDistance);
     }
 }

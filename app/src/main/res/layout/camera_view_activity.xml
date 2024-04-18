@@ -9,6 +9,24 @@
         android:layout_height="match_parent"
         android:layout_above="@id/controlPanel"/>
 
+    <Button
+        android:id="@+id/describe_environment_button"
+        android:layout_width="175dp"
+        android:layout_height="wrap_content"
+        android:text="Environment"
+        android:layout_marginBottom="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_alignParentBottom="true" />
+
+    <Button
+        android:id="@+id/traffic_lights_button"
+        android:layout_width="175dp"
+        android:layout_height="wrap_content"
+        android:text="Traffic lights"
+        android:layout_marginBottom="68dp"
+        android:layout_marginStart="10dp"
+        android:layout_alignParentBottom="true" />
+
     <LinearLayout
         android:id="@+id/controlPanel"
         android:layout_width="match_parent"
