@@ -221,14 +221,21 @@ public class ImageRecognition {
 
 
                     TrafficLight.TrafficLightColor currentColor = TrafficLight.analyzeColor(detectionBitmap, boundingBox);
-                    String colorStatus = (currentColor == TrafficLight.TrafficLightColor.GREEN) ? "Green" : "Red";
+                    String colorStatus = "";
 
-                        if (lastSpokenColor == null || lastSpokenColor != currentColor) {
-                            Log.d("light is", "" + lastSpokenColor + currentColor);
-                            String speechText = TrafficLight.trafficLightText;
-                            tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null);
-                            lastSpokenColor = currentColor;
-                        }
+                    if(currentColor == TrafficLight.TrafficLightColor.GREEN) {
+                        colorStatus = "GREEN";
+                    } else if (currentColor == TrafficLight.TrafficLightColor.RED) {
+                        colorStatus = "RED";
+                    } else {
+                        colorStatus = "Undef";
+                    }
+
+                    if (lastSpokenColor == null || lastSpokenColor != currentColor) {
+                        String speechText = TrafficLight.trafficLightText;
+                        tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null);
+                        lastSpokenColor = currentColor;
+                    }
 
                     Imgproc.rectangle(imageForDetection, new Point(left, top), new Point(right, bottom), new Scalar(255, 0, 0), 2);
                     String label = String.format("%s: %s", category, colorStatus);

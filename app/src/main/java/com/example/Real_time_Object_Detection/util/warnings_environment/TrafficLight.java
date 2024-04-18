@@ -34,7 +34,7 @@ public class TrafficLight {
                 int blue = pixel & 0xff;
                 int brightness = (int)(0.299 * red + 0.587 * green + 0.114 * blue);
 
-                if (brightness < 50) {
+                if (brightness > 100) {
                     redSum += red;
                     greenSum += green;
                     darkPixelCount++;
@@ -53,7 +53,7 @@ public class TrafficLight {
 
         Log.d("Traffic Light Detection", "Computed average Red: " + avgRed + ", average Green: " + avgGreen);
 
-        int colorDifferenceThreshold = 7;
+        int colorDifferenceThreshold = 13;
         if (Math.abs(avgRed - avgGreen) < colorDifferenceThreshold) {
             Log.d("Traffic Light Detection", "Difference between red and green values is too small.");
             trafficLightText = "Color difference is too small.";
