@@ -233,8 +233,10 @@ public class ImageRecognition {
 
                     if (lastSpokenColor == null || lastSpokenColor != currentColor) {
                         String speechText = TrafficLight.trafficLightText;
-                        tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null);
-                        lastSpokenColor = currentColor;
+                        if(!colorStatus.equals("Undef")) {
+                            tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null);
+                            lastSpokenColor = currentColor;
+                        }
                     }
 
                     Imgproc.rectangle(imageForDetection, new Point(left, top), new Point(right, bottom), new Scalar(255, 0, 0), 2);

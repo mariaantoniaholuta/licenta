@@ -236,8 +236,10 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
                 surroundingsEnabled = false;
                 environmentEnabled = false;
                 speakOutButton("Traffic Light Detection Activated. ");
+            } else {
+                speakOutButton("Traffic Light Detection Deactivated. ");
             }
-            Log.d(LOG_TAG, "Traffic Light activated");
+            Log.d(LOG_TAG, "Traffic Light");
         });
     }
 

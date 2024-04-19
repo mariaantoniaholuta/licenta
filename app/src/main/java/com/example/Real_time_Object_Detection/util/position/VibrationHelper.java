@@ -25,8 +25,8 @@ public class VibrationHelper {
 
     public void vibrateBasedOnDeviation(float totalDeviation) {
         int intensity = calculateIntensityBasedOnTotalDeviation(totalDeviation);
-        Log.d("VibrationHelper", "totalDeviation: " + totalDeviation);
-        Log.d("VibrationHelper", "Vibrating with intensity: " + intensity);
+        //Log.d("VibrationHelper", "totalDeviation: " + totalDeviation);
+        //Log.d("VibrationHelper", "Vibrating with intensity: " + intensity);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, intensity));

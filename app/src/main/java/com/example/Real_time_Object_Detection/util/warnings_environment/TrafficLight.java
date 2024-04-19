@@ -34,7 +34,8 @@ public class TrafficLight {
                 int blue = pixel & 0xff;
                 int brightness = (int)(0.299 * red + 0.587 * green + 0.114 * blue);
 
-                if (brightness > 100) {
+                Log.d("Traffic Light Detection", "bright"+brightness);
+                if (brightness > 90) {
                     redSum += red;
                     greenSum += green;
                     darkPixelCount++;
@@ -43,7 +44,7 @@ public class TrafficLight {
         }
 
         if (darkPixelCount == 0) {
-            Log.d("Traffic Light Detection", "No dark pixels found in the specified area. Unable to determine the traffic light color.");
+            Log.d("Traffic Light Detection", "No dark pixels found in the area. Unable to determine the traffic light color.");
             trafficLightText = "Can't determine color.";
             return TrafficLightColor.UNDETERMINED;
         }
@@ -53,7 +54,8 @@ public class TrafficLight {
 
         Log.d("Traffic Light Detection", "Computed average Red: " + avgRed + ", average Green: " + avgGreen);
 
-        int colorDifferenceThreshold = 13;
+        int colorDifferenceThreshold = 15;
+        Log.d("Traffic Light Detection", "Difference color"+Math.abs(avgRed - avgGreen));
         if (Math.abs(avgRed - avgGreen) < colorDifferenceThreshold) {
             Log.d("Traffic Light Detection", "Difference between red and green values is too small.");
             trafficLightText = "Color difference is too small.";
