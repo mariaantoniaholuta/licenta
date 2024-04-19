@@ -9,6 +9,22 @@
         android:layout_height="match_parent"
         android:layout_above="@id/controlPanel"/>
 
+<!--    <TextView-->
+<!--        android:id="@+id/gps_button"-->
+<!--        android:layout_width="70dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="GPS"-->
+<!--        android:layout_marginTop="50dp"-->
+<!--        android:layout_alignParentTop="true"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        android:textSize="18sp"-->
+<!--        android:paddingStart="16dp"-->
+<!--        android:paddingEnd="16dp"-->
+<!--        android:paddingTop="11dp"-->
+<!--        android:paddingBottom="11dp"-->
+<!--        android:textColor="#9d65fc"-->
+<!--        android:background="@drawable/textview_border"/>-->
+
     <Button
         android:id="@+id/describe_environment_button"
         android:layout_width="175dp"

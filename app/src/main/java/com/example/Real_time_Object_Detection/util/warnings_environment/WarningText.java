@@ -70,7 +70,7 @@ public class WarningText {
                     warningMessage = "";
                 }
             } else {
-                if (adjustedDistance < 1.5f && objectLabel.equals("person")) {
+                if (adjustedDistance < 1.4f && objectLabel.equals("person")) {
                     warningMessage = "Careful! A " + objectLabel + " is too Close";
                 } else if (adjustedDistance < 3 && isGettingCloser && objectLabel.equals("person")) {
                     warningMessage = "Careful! A " + objectLabel + " is getting closer";

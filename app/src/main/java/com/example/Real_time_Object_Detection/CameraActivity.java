@@ -3,6 +3,7 @@ package com.example.Real_time_Object_Detection;
 import static com.example.Real_time_Object_Detection.util.formats.ValuesExtracter.parseOrientationFromText;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -74,7 +75,7 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
     private boolean ttsInitialized = false;
 
     private long lastSpeakTime = 0;
-    private static final long SPEAK_INTERVAL_MS = 3000;
+    private static final long SPEAK_INTERVAL_MS = 4500;
 
     private Environment environment;
 
@@ -241,6 +242,7 @@ public class CameraActivity extends AppCompatActivity implements TextToSpeech.On
             }
             Log.d(LOG_TAG, "Traffic Light");
         });
+
     }
 
     private void speakOutButton(String text) {
