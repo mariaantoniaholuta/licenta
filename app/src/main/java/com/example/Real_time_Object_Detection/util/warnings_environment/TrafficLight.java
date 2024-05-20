@@ -34,7 +34,7 @@ public class TrafficLight {
                 int blue = pixel & 0xff;
                 int brightness = (int)(0.299 * red + 0.587 * green + 0.114 * blue);
 
-                Log.d("Traffic Light Detection", "bright"+brightness);
+                //Log.d("Traffic Light Detection", "bright"+brightness);
                 if (brightness > 90) {
                     redSum += red;
                     greenSum += green;

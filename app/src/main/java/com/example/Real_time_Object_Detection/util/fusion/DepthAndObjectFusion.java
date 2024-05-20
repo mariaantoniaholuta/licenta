@@ -7,7 +7,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 public class DepthAndObjectFusion {
-    private static final float METERS_CALIBRATOR = 2.4f;
+    private static final float METERS_CALIBRATOR = 1.9f;
 
     public float adjustDistanceBasedOnObjectSizeAndType(float estimatedDepth, Rect boundingBox, String objectType) {
         float adjustedDistance = estimatedDepth;
@@ -67,11 +67,7 @@ public class DepthAndObjectFusion {
     }
 
     public float adjustDistanceForClosenessPrecision(float estimatedDepth) {
-        if (estimatedDepth >= METERS_CALIBRATOR) {
-            return estimatedDepth - METERS_CALIBRATOR;
-        } else {
-            return estimatedDepth;
-        }
+        return Math.max(0, estimatedDepth - METERS_CALIBRATOR);
     }
 
     public float getAverageObjectHeight1(String objectType) {

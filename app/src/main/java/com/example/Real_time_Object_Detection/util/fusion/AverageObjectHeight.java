@@ -33,13 +33,13 @@ public class AverageObjectHeight {
                 averageObjectHeight = 3.5f;
                 break;
             case "traffic light":
-                averageObjectHeight = 2.5f;
+                averageObjectHeight = 0.9f;
                 break;
             case "fire hydrant":
                 averageObjectHeight = 0.75f;
                 break;
             case "stop sign":
-                averageObjectHeight = 2.2f;
+                averageObjectHeight = 0.5f;
                 break;
             case "parking meter":
                 averageObjectHeight = 1.25f;

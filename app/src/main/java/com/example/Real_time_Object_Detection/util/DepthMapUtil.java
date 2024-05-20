@@ -144,6 +144,7 @@ public class DepthMapUtil {
         float depthToMeteresRatio = 1.5f;
         float normalizedDepth = depthValue / 255.0f;
         float distanceInMeters = (1.0f - normalizedDepth) * maxDepthRangeInMeters - depthToMeteresRatio;
+        //distanceInMeters = Math.max(0, distanceInMeters - REDUCTION_FACTOR);
 
         Log.d("estimated in meters", "is " + distanceInMeters);
         return distanceInMeters;

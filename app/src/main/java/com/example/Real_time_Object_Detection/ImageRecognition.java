@@ -240,7 +240,7 @@ public class ImageRecognition {
                     }
 
                     Imgproc.rectangle(imageForDetection, new Point(left, top), new Point(right, bottom), new Scalar(255, 0, 0), 2);
-                    String label = String.format("%s: %s", category, colorStatus);
+                    String label = String.format("TL: %s", colorStatus);
                     Imgproc.putText(imageForDetection, label, new Point(left, top - 10), 3,1, new Scalar(0, 255, 0), 2);
 
                     break;
