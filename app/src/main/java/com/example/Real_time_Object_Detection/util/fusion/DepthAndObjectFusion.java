@@ -7,7 +7,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 public class DepthAndObjectFusion {
-    private static final float METERS_CALIBRATOR = 1.9f;
+    private static final float METERS_CALIBRATOR = 1.2f;
 
     public float adjustDistanceBasedOnObjectSizeAndType(float estimatedDepth, Rect boundingBox, String objectType) {
         float adjustedDistance = estimatedDepth;
@@ -66,45 +66,20 @@ public class DepthAndObjectFusion {
         return estimatedDistance;
     }
 
-    public float adjustDistanceForClosenessPrecision(float estimatedDepth) {
-        return Math.max(0, estimatedDepth - METERS_CALIBRATOR);
+    public float adjustDistanceForClosenessPrecision(float estimatedDepth, String objectType) {
+        if (estimatedDepth <= 0) {
+            return estimatedDepth;
+        }
+        float calibrator = getAverageObjectHeight(objectType) * 2;
+
+        float adjustmentFactor = Math.min(estimatedDepth / calibrator, 1.0f);
+        float adjustedDepth = estimatedDepth - (calibrator * adjustmentFactor);
+
+        return Math.max(0, adjustedDepth);
     }
 
-    public float getAverageObjectHeight1(String objectType) {
-        float averageObjectHeight = 0.5f;
-        switch (objectType) {
-            case "person":
-                averageObjectHeight = 1.7f;
-                break;
-            case "car":
-                averageObjectHeight = 1.5f;
-                break;
-            case "truck":
-                averageObjectHeight = 3.6f;
-                break;
-            case "motorcycle":
-                averageObjectHeight = 0.9f;
-                break;
-            case "bicycle":
-                averageObjectHeight = 0.8f;
-                break;
-            case "dog":
-                averageObjectHeight = 0.5f;
-                break;
-            case "cat":
-                averageObjectHeight = 0.3f;
-                break;
-            case "traffic light":
-                averageObjectHeight = 0.6f;
-                break;
-            case "laptop":
-                averageObjectHeight = 0.3f;
-                break;
-            case "keyboard":
-                averageObjectHeight = 0.2f;
-                break;
-        }
-        return averageObjectHeight;
+    public float getAverageObjectHeight(String objectType) {
+        return AverageObjectHeight.getAverageObjectHeight(objectType);
     }
 
 }

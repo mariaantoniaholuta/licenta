@@ -61,7 +61,7 @@ public class DepthRecognition {
         }
 
         float adjustedDistance = fusionUtil.adjustDistanceBasedOnObjectSizeAndType(estimatedDepth, boundingBox, objectLabel);
-        adjustedDistance = fusionUtil.adjustDistanceForClosenessPrecision(adjustedDistance);
+        adjustedDistance = fusionUtil.adjustDistanceForClosenessPrecision(adjustedDistance, objectLabel);
 
         Log.d("estimated d:", String.valueOf(estimatedDepth));
         Log.d("adjusted d:", String.valueOf(adjustedDistance));

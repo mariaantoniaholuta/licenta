@@ -9,10 +9,10 @@ public class AverageObjectHeight {
                 averageObjectHeight = 1.6f;
                 break;
             case "bicycle":
-                averageObjectHeight = 1.1f;
+                averageObjectHeight = 0.6f;
                 break;
             case "car":
-                averageObjectHeight = 1.5f;
+                averageObjectHeight = 1.3f;
                 break;
             case "motorcycle":
                 averageObjectHeight = 1.2f;
@@ -195,7 +195,7 @@ public class AverageObjectHeight {
                 averageObjectHeight = 0.9f;
                 break;
             case "laptop":
-                averageObjectHeight = 0.2f;
+                averageObjectHeight = 0.5f;
                 break;
             case "mouse":
                 averageObjectHeight = 0.04f;
