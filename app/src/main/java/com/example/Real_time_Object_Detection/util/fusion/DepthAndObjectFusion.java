@@ -70,9 +70,14 @@ public class DepthAndObjectFusion {
         if (estimatedDepth <= 0) {
             return estimatedDepth;
         }
+        Log.d("closeness", "estimated fix: " + estimatedDepth);
         float calibrator = getAverageObjectHeight(objectType) * 2;
+        if(objectType.equals("person")) {
+            calibrator -= 1.6;
+        }
 
-        float adjustmentFactor = Math.min(estimatedDepth / calibrator, 1.0f);
+        //float adjustmentFactor = Math.min(estimatedDepth / calibrator, 1.0f);
+        float adjustmentFactor = (float) Math.pow(Math.min(estimatedDepth / calibrator, 1.0f), 100);
         float adjustedDepth = estimatedDepth - (calibrator * adjustmentFactor);
 
         return Math.max(0, adjustedDepth);
